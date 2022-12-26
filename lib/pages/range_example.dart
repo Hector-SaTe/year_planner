@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:year_planner/providers.dart';
 
 import '../utils.dart';
+
+final _titleProvider = StateProvider.autoDispose<String>(((ref) => ""));
+final _teamsProvider = StateProvider.autoDispose<int>(((ref) => 2));
 
 class TableRangeExample extends StatefulWidget {
   const TableRangeExample({super.key});
@@ -21,22 +25,18 @@ class _TableRangeExampleState extends State<TableRangeExample> {
   DateTime? _selectedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
-  String? _title;
 
   @override
   Widget build(BuildContext context) {
-    _title = "katapum";
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create new entry'),
       ),
-      floatingActionButton: SaveButton(
-          title: _title, rangeStart: _rangeStart, rangeEnd: _rangeEnd),
-      body: Column(
+      floatingActionButton:
+          SaveButton(rangeStart: _rangeStart, rangeEnd: _rangeEnd),
+      body: ListView(
         children: [
-          const Text("Name of the period:"),
-          Text(_title ?? "-"),
-          const SizedBox(height: 20),
+          const TitleInput(),
           TableCalendar(
             firstDay: kFirstDay,
             lastDay: lastDay,
@@ -78,30 +78,102 @@ class _TableRangeExampleState extends State<TableRangeExample> {
   }
 }
 
+class TitleInput extends HookConsumerWidget {
+  const TitleInput({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textController = useTextEditingController();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, left: 24, right: 24, bottom: 0),
+      child: Column(
+        children: [
+          Text(
+            "Enter title of the Period",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Theme.of(context).primaryColor),
+          ),
+          TextField(
+            controller: textController,
+            maxLength: 20,
+            decoration: const InputDecoration(
+              labelText: 'Enter title here',
+            ),
+            onChanged: (value) {
+              ref.read(_titleProvider.notifier).state = value;
+              //textController.clear();
+            },
+          ),
+          Text(
+            "Enter number of teams to divide",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Theme.of(context).primaryColor),
+          ),
+          DropdownButton<int>(
+              value: ref.watch(_teamsProvider),
+              items: const [
+                DropdownMenuItem(
+                  value: 2,
+                  child: Text("2 Teams"),
+                ),
+                DropdownMenuItem(
+                  value: 3,
+                  child: Text("3 Teams"),
+                ),
+                DropdownMenuItem(
+                  value: 4,
+                  child: Text("4 Teams"),
+                )
+              ],
+              onChanged: ((value) =>
+                  ref.read(_teamsProvider.notifier).state = value!)),
+          const SizedBox(height: 8),
+          Text(
+            "Select range of the Period",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Theme.of(context).primaryColor),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class SaveButton extends ConsumerWidget {
   const SaveButton({
     Key? key,
-    required String? title,
     required DateTime? rangeStart,
     required DateTime? rangeEnd,
-  })  : _title = title,
-        _rangeStart = rangeStart,
+  })  : _rangeStart = rangeStart,
         _rangeEnd = rangeEnd,
         super(key: key);
 
-  final String? _title;
   final DateTime? _rangeStart;
   final DateTime? _rangeEnd;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final String title = ref.watch(_titleProvider);
+    final int teams = ref.watch(_teamsProvider);
+    bool deactivated =
+        (title.isEmpty || _rangeStart == null || _rangeEnd == null);
     return FloatingActionButton(
-      onPressed: (_title == null || _rangeStart == null || _rangeEnd == null)
+      backgroundColor: deactivated ? Colors.grey : null,
+      onPressed: deactivated
           ? null
           : () {
               ref
                   .read(periodListProvider.notifier)
-                  .addItem(_title!, _rangeStart!, _rangeEnd!);
+                  .addItem(title, _rangeStart!, _rangeEnd!, teams);
               Navigator.pop(context);
             },
       tooltip: 'save Item',

@@ -1,5 +1,12 @@
 import 'package:flutter/foundation.dart' show immutable;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+enum TeamNames {
+  team1,
+  team2,
+  team3,
+  team4,
+}
 
 @immutable
 class TimePeriod {
@@ -7,20 +14,27 @@ class TimePeriod {
   final DateTime endRange;
   final String title;
   final Map<String, String> dayInfo;
+  final int teams;
 
   const TimePeriod(
       {required this.startRange,
       required this.endRange,
       required this.title,
+      required this.teams,
       this.dayInfo = const {}});
 }
 
 class TimePeriodList extends StateNotifier<List<TimePeriod>> {
   TimePeriodList([List<TimePeriod>? initialList]) : super(initialList ?? []);
-  void addItem(String title, DateTime startRange, DateTime endRange) {
+  void addItem(
+      String title, DateTime startRange, DateTime endRange, int teams) {
     state = [
       ...state,
-      TimePeriod(startRange: startRange, endRange: endRange, title: title)
+      TimePeriod(
+          startRange: startRange,
+          endRange: endRange,
+          title: title,
+          teams: teams)
     ];
   }
 
@@ -32,6 +46,7 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
               startRange: period.startRange,
               endRange: period.endRange,
               title: period.title,
+              teams: period.teams,
               dayInfo: dayInfo)
         else
           period,
@@ -46,6 +61,7 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
           TimePeriod(
               startRange: period.startRange,
               endRange: period.endRange,
+              teams: period.teams,
               title: period.title)
         else
           period,

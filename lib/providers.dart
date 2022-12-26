@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'models.dart';
 
 const String exampleName = "example period";
@@ -9,12 +9,13 @@ final periodListProvider =
               TimePeriod(
                   startRange: DateTime(2022, 12, 1, 0, 0),
                   endRange: DateTime(2023, 1, 10, 0, 0),
+                  teams: 2,
                   title: exampleName)
             ])));
 
-final periodSelectionProvider = StateProvider(((_) => exampleName));
 final currentItem = Provider<TimePeriod>((ref) => throw UnimplementedError());
 
+final periodSelectionProvider = StateProvider<String>(((_) => exampleName));
 final selectedPeriodProvider = Provider<TimePeriod>(((ref) {
   final selection = ref.watch(periodSelectionProvider);
   final periodList = ref.watch(periodListProvider);

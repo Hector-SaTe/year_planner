@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:year_planner/pages/basics_example.dart';
 import 'package:year_planner/pages/range_example.dart';
@@ -79,6 +79,10 @@ class PeriodListItem extends ConsumerWidget {
       ),
       title: Text(period.title),
       trailing: Text("${duration.inDays} days"),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => TableBasicsExample(ref)),
+      ),
     );
   }
 }

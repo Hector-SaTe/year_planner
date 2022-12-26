@@ -15,7 +15,9 @@ dependencies:
     sdk: flutter
   intl: ^0.17.0
   cupertino_icons: ^1.0.2
-  flutter_riverpod: ^2.1.1
+  #flutter_riverpod: ^2.1.1
+  hooks_riverpod: ^2.1.2
+  flutter_hooks: ^0.18.5+1
   table_calendar: ^3.0.8
   simple_gesture_detector: ^0.2.0
 
