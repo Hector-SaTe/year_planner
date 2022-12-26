@@ -25,6 +25,7 @@ class _SelectRangeState extends State<SelectRange> {
   DateTime? _selectedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
+  Duration _rangeDuration = const Duration(days: 0);
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +57,7 @@ class _SelectRangeState extends State<SelectRange> {
                   _rangeStart = null; // Important to clean those
                   _rangeEnd = null;
                   _rangeSelectionMode = RangeSelectionMode.toggledOff;
+                  _rangeDuration = const Duration(days: 0);
                 });
               }
             },
@@ -66,11 +68,26 @@ class _SelectRangeState extends State<SelectRange> {
                 _rangeStart = start;
                 _rangeEnd = end;
                 _rangeSelectionMode = RangeSelectionMode.toggledOn;
+                if (start != null && end != null) {
+                  _rangeDuration = end.difference(start);
+                } else {
+                  _rangeDuration = const Duration(days: 0);
+                }
               });
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
             },
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              "Selected range: ${_rangeDuration.inDays} days",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium!
+                  .copyWith(color: Theme.of(context).primaryColor),
+            ),
           ),
         ],
       ),

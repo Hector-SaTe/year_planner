@@ -31,7 +31,8 @@ class MyHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final periodList = ref.watch(periodListProvider);
+    final periodListLength =
+        ref.watch(periodListProvider.select((list) => list.length));
     return Scaffold(
       appBar: AppBar(
         leading: const ImageIcon(
@@ -44,10 +45,10 @@ class MyHomePage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           const Text('Select one time period to see:'),
-          for (var i = 0; i < periodList.length; i++)
+          for (var i = 0; i < periodListLength; i++)
             ProviderScope(
               overrides: [
-                currentItem.overrideWithValue(periodList[i]),
+                //currentItem.overrideWithValue(periodList[i]),
                 currentItemIndex.overrideWithValue(i),
               ],
               child: const PeriodListItem(),
@@ -71,8 +72,9 @@ class PeriodListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final period = ref.watch(currentItem);
-    final periodindex = ref.watch(currentItemIndex);
+    final periodIndex = ref.watch(currentItemIndex);
+    final period =
+        ref.watch(periodListProvider.select((list) => list[periodIndex]));
     final Duration duration = period.endRange.difference(period.startRange);
     return ListTile(
       leading: const Padding(
@@ -82,10 +84,10 @@ class PeriodListItem extends ConsumerWidget {
       title: Text(period.title),
       trailing: Text("${duration.inDays} days"),
       onTap: () {
-        ref.read(selectedItemIndex.notifier).state = periodindex;
+        ref.read(selectedItemIndex.notifier).state = periodIndex;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => TableBasicsExample(ref)),
+          MaterialPageRoute(builder: (_) => const TableBasicsExample()),
         );
       },
     );

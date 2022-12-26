@@ -7,8 +7,7 @@ import 'package:year_planner/providers.dart';
 import '../utils.dart';
 
 class TableBasicsExample extends StatefulHookConsumerWidget {
-  final WidgetRef ref;
-  const TableBasicsExample(this.ref, {super.key});
+  const TableBasicsExample({super.key});
 
   @override
   ConsumerState<TableBasicsExample> createState() => _TableBasicsExampleState();
@@ -21,7 +20,9 @@ class _TableBasicsExampleState extends ConsumerState<TableBasicsExample> {
 
   @override
   Widget build(BuildContext context) {
-    final period = widget.ref.watch(currentItem);
+    final periodIndex = ref.watch(selectedItemIndex);
+    final period =
+        ref.watch(periodListProvider.select((list) => list[periodIndex]));
     return Scaffold(
       appBar: AppBar(
         //leading: const Image(image: AssetImage("assets/icon_2_front.png")),
@@ -29,7 +30,7 @@ class _TableBasicsExampleState extends ConsumerState<TableBasicsExample> {
       ),
       body: ListView(
         children: [
-          TeamsWidget(widget.ref),
+          TeamsWidget(period),
           TableCalendar(
             startingDayOfWeek: StartingDayOfWeek.monday,
             firstDay: kFirstDay,
@@ -66,25 +67,59 @@ class _TableBasicsExampleState extends ConsumerState<TableBasicsExample> {
   }
 }
 
+final _daysInTeam =
+    StateProvider.autoDispose<List<int>>(((ref) => [0, 0, 0, 0]));
+
 class TeamsWidget extends HookConsumerWidget {
-  final WidgetRef ref;
+  final TimePeriod period;
   const TeamsWidget(
-    this.ref, {
+    this.period, {
     Key? key,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef refnew) {
-    final period = ref.watch(currentItem);
+  Widget build(BuildContext context, WidgetRef ref) {
     final periodIndex = ref.watch(selectedItemIndex);
     final Duration periodDuration =
         period.endRange.difference(period.startRange);
+    final daysInTeam = ref.watch(_daysInTeam);
+    final int daysLeft =
+        periodDuration.inDays - daysInTeam.reduce((a, b) => a + b);
+    List<int> selectedDays = [0, 0, 0, 0];
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          Text("Selected ${periodIndex} from list"),
-          Text("Still ${periodDuration.inDays} days to share"),
+          Text(
+            "Selected range: ${periodDuration.inDays} days",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Theme.of(context).primaryColor),
+          ),
+          (daysLeft == 0)
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.group_outlined,
+                      color: Colors.green,
+                    ),
+                    SizedBox(width: 20),
+                    Text("All days divided!")
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.group_off_outlined,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 20),
+                    Text("Still $daysLeft days left..."),
+                  ],
+                ),
           const SizedBox(height: 24),
           Wrap(
             spacing: 24,
@@ -95,15 +130,16 @@ class TeamsWidget extends HookConsumerWidget {
                   width: 124,
                   child: Column(
                     children: [
-                      Text("Enter days for team ${i + 1}:"),
+                      Text("Team ${i + 1}:"),
                       TextField(
                         maxLength: 3,
                         decoration: const InputDecoration(
                           labelText: 'Enter days',
                         ),
                         onChanged: (value) {
-                          print(value);
-                          //ref.read(_titleProvider.notifier).state = value;
+                          selectedDays = [...daysInTeam];
+                          selectedDays[i] = int.tryParse(value) ?? 0;
+                          ref.read(_daysInTeam.notifier).state = selectedDays;
                           //textController.clear();
                         },
                       ),
