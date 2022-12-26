@@ -9,14 +9,14 @@ import '../utils.dart';
 final _titleProvider = StateProvider.autoDispose<String>(((ref) => ""));
 final _teamsProvider = StateProvider.autoDispose<int>(((ref) => 2));
 
-class TableRangeExample extends StatefulWidget {
-  const TableRangeExample({super.key});
+class SelectRange extends StatefulWidget {
+  const SelectRange({super.key});
 
   @override
-  State<TableRangeExample> createState() => _TableRangeExampleState();
+  State<SelectRange> createState() => _SelectRangeState();
 }
 
-class _TableRangeExampleState extends State<TableRangeExample> {
+class _SelectRangeState extends State<SelectRange> {
   final lastDay = DateTime(kToday.year, kToday.month + 12, kToday.day);
   final CalendarFormat _calendarFormat = CalendarFormat.month;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode

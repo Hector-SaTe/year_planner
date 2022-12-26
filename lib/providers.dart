@@ -14,6 +14,8 @@ final periodListProvider =
             ])));
 
 final currentItem = Provider<TimePeriod>((ref) => throw UnimplementedError());
+final currentItemIndex = Provider<int>((ref) => throw UnimplementedError());
+final selectedItemIndex = StateProvider<int>((_) => 1);
 
 final periodSelectionProvider = StateProvider<String>(((_) => exampleName));
 final selectedPeriodProvider = Provider<TimePeriod>(((ref) {

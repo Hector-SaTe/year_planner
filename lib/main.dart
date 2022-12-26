@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:year_planner/pages/basics_example.dart';
-import 'package:year_planner/pages/range_example.dart';
+import 'package:year_planner/screens/create_period.dart';
 import 'package:year_planner/providers.dart';
 
 void main() {
@@ -48,6 +48,7 @@ class MyHomePage extends ConsumerWidget {
             ProviderScope(
               overrides: [
                 currentItem.overrideWithValue(periodList[i]),
+                currentItemIndex.overrideWithValue(i),
               ],
               child: const PeriodListItem(),
             )
@@ -56,7 +57,7 @@ class MyHomePage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const TableRangeExample()),
+          MaterialPageRoute(builder: (_) => const SelectRange()),
         ),
         tooltip: 'new Item',
         child: const Icon(Icons.add),
@@ -71,6 +72,7 @@ class PeriodListItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final period = ref.watch(currentItem);
+    final periodindex = ref.watch(currentItemIndex);
     final Duration duration = period.endRange.difference(period.startRange);
     return ListTile(
       leading: const Padding(
@@ -79,10 +81,13 @@ class PeriodListItem extends ConsumerWidget {
       ),
       title: Text(period.title),
       trailing: Text("${duration.inDays} days"),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => TableBasicsExample(ref)),
-      ),
+      onTap: () {
+        ref.read(selectedItemIndex.notifier).state = periodindex;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => TableBasicsExample(ref)),
+        );
+      },
     );
   }
 }

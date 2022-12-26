@@ -8,7 +8,7 @@ import 'pages/basics_example.dart';
 import 'pages/complex_example.dart';
 import 'pages/events_example.dart';
 import 'pages/multi_example.dart';
-import 'pages/range_example.dart';
+import 'screens/create_period.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(MyApp()));

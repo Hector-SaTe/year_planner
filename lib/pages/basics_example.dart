@@ -76,13 +76,14 @@ class TeamsWidget extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef refnew) {
     final period = ref.watch(currentItem);
+    final periodIndex = ref.watch(selectedItemIndex);
     final Duration periodDuration =
         period.endRange.difference(period.startRange);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          //const Text("Enter number of days to share"),
+          Text("Selected ${periodIndex} from list"),
           Text("Still ${periodDuration.inDays} days to share"),
           const SizedBox(height: 24),
           Wrap(
