@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:year_planner/pages/basics_example.dart';
+import 'package:year_planner/screens/show_period.dart';
 import 'package:year_planner/screens/create_period.dart';
 import 'package:year_planner/providers.dart';
 
@@ -31,8 +31,7 @@ class MyHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final periodListLength =
-        ref.watch(periodListProvider.select((list) => list.length));
+    final periodList = ref.watch(periodListProvider);
     return Scaffold(
       appBar: AppBar(
         leading: const ImageIcon(
@@ -45,13 +44,19 @@ class MyHomePage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           const Text('Select one time period to see:'),
-          for (var i = 0; i < periodListLength; i++)
-            ProviderScope(
-              overrides: [
-                //currentItem.overrideWithValue(periodList[i]),
-                currentItemIndex.overrideWithValue(i),
-              ],
-              child: const PeriodListItem(),
+          for (var i = 0; i < periodList.length; i++)
+            Dismissible(
+              key: ValueKey(periodList[i].title),
+              onDismissed: (direction) => ref
+                  .read(periodListProvider.notifier)
+                  .removeItem(periodList[i].title),
+              child: ProviderScope(
+                overrides: [
+                  //currentItem.overrideWithValue(periodList[i]),
+                  currentItemIndex.overrideWithValue(i),
+                ],
+                child: const PeriodListItem(),
+              ),
             )
         ],
       ),
@@ -87,7 +92,7 @@ class PeriodListItem extends ConsumerWidget {
         ref.read(selectedItemIndex.notifier).state = periodIndex;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const TableBasicsExample()),
+          MaterialPageRoute(builder: (_) => const ShowPeriod()),
         );
       },
     );

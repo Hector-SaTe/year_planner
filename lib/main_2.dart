@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'pages/basics_example.dart';
+import 'screens/show_period.dart';
 import 'pages/complex_example.dart';
 import 'pages/events_example.dart';
 import 'pages/multi_example.dart';
@@ -47,14 +47,6 @@ class _StartPageState extends State<StartPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 20.0),
-            ElevatedButton(
-              child: const Text('Basics'),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TableBasicsExample()),
-              ),
-            ),
-            const SizedBox(height: 12.0),
             ElevatedButton(
               child: const Text('Events'),
               onPressed: () => Navigator.push(

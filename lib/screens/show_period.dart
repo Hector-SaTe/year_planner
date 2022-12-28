@@ -8,15 +8,16 @@ import 'package:year_planner/providers.dart';
 
 import '../utils.dart';
 
-class TableBasicsExample extends StatefulHookConsumerWidget {
-  const TableBasicsExample({super.key});
+class ShowPeriod extends StatefulHookConsumerWidget {
+  const ShowPeriod({super.key});
 
   @override
-  ConsumerState<TableBasicsExample> createState() => _TableBasicsExampleState();
+  ConsumerState<ShowPeriod> createState() => _ShowPeriodState();
 }
 
-class _TableBasicsExampleState extends ConsumerState<TableBasicsExample> {
-  DateTime _focusedDay = DateTime.now();
+class _ShowPeriodState extends ConsumerState<ShowPeriod> {
+  //DateTime _focusedDay = DateTime.now();
+  DateTime? _focusedDay;
   // Using a `LinkedHashSet` is recommended due to equality comparison override
   final Set<DateTime> _selectedDays = LinkedHashSet<DateTime>(
     equals: isSameDay,
@@ -39,31 +40,33 @@ class _TableBasicsExampleState extends ConsumerState<TableBasicsExample> {
     final periodIndex = ref.watch(selectedItemIndex);
     final period =
         ref.watch(periodListProvider.select((list) => list[periodIndex]));
-    return Scaffold(
-      appBar: AppBar(
-        //leading: const Image(image: AssetImage("assets/icon_2_front.png")),
-        title: Text(period.title),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 20),
-        children: [
-          TeamsWidget(period),
-          TableCalendar(
-            startingDayOfWeek: StartingDayOfWeek.monday,
-            calendarFormat: CalendarFormat.month,
-            firstDay: period.startRange,
-            lastDay: period.endRange,
-            focusedDay: _focusedDay,
-            headerStyle: const HeaderStyle(
-                formatButtonVisible: false, titleCentered: true),
-            selectedDayPredicate: (day) => _selectedDays.contains(day),
-            onDaySelected: _onDaySelected,
-            onPageChanged: (focusedDay) {
-              // No need to call `setState()` here
-              _focusedDay = focusedDay;
-            },
-          ),
-        ],
+    _focusedDay ??= period.startRange;
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          //leading: const Image(image: AssetImage("assets/icon_2_front.png")),
+          title: Text(period.title),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.only(top: 20),
+          children: [
+            TeamsWidget(period),
+            TableCalendar(
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              calendarFormat: CalendarFormat.month,
+              firstDay: period.startRange,
+              lastDay: period.endRange,
+              focusedDay: _focusedDay!,
+              headerStyle: const HeaderStyle(
+                  formatButtonVisible: false, titleCentered: true),
+              selectedDayPredicate: (day) => _selectedDays.contains(day),
+              onDaySelected: _onDaySelected,
+              onPageChanged: (focusedDay) => _focusedDay = focusedDay,
+            ),
+          ],
+        ),
       ),
     );
   }
