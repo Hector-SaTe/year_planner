@@ -8,12 +8,16 @@ import 'package:year_planner/providers.dart';
 
 import '../utils.dart';
 
-// Private Model
-late List<Set<DateTime>> _teamDays;
 // Private Providers
 final _daysInTeam =
     StateProvider.autoDispose<List<int>>(((ref) => [0, 0, 0, 0]));
 final _activatedTeam = StateProvider.autoDispose<int>(((ref) => 0));
+final _teamColors = Provider.autoDispose((ref) => [
+      const Color.fromARGB(255, 20, 51, 191),
+      const Color.fromARGB(255, 5, 137, 25),
+      const Color.fromARGB(255, 134, 15, 84),
+      const Color.fromARGB(255, 203, 157, 16)
+    ]);
 
 class ShowPeriod extends StatefulHookConsumerWidget {
   const ShowPeriod({super.key});
@@ -33,37 +37,36 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final period =
         ref.read(periodListProvider.select((list) => list[periodIndex]));
     _focusedDay = period.startRange;
-    if (period.teamDays.isNotEmpty) {
-      for (var i = 0; i < period.teamDays.length; i++) {
-        _teamDays[i] = {...period.teamDays[i]};
-      }
-    } else {
-      _teamDays = List.generate(
+    if (period.teamDays.isEmpty) {
+      final definedList = List.generate(
           4,
           ((index) => LinkedHashSet<DateTime>(
                 equals: isSameDay,
                 hashCode: getHashCode,
               )),
           growable: false);
+      ref.read(periodListProvider.notifier).addInfoAt(periodIndex, definedList);
     }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final teamColors = ref.watch(_teamColors);
     final team = ref.watch(_activatedTeam);
     final periodIndex = ref.watch(selectedItemIndex);
     final period =
         ref.watch(periodListProvider.select((list) => list[periodIndex]));
+    final teamDays = period.teamDays;
 
     void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
       setState(() {
         _focusedDay = focusedDay;
         // Update values in a Set
-        if (_teamDays[team].contains(selectedDay)) {
-          _teamDays[team].remove(selectedDay);
+        if (teamDays[team].contains(selectedDay)) {
+          teamDays[team].remove(selectedDay);
         } else {
-          _teamDays[team].add(selectedDay);
+          teamDays[team].add(selectedDay);
         }
       });
     }
@@ -71,16 +74,6 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          //backgroundColor: deactivated ? Colors.grey : null,
-          onPressed: () {
-            ref
-                .read(periodListProvider.notifier)
-                .addInfoAt(periodIndex, _teamDays);
-          },
-          tooltip: 'save changes',
-          child: const Icon(Icons.save),
-        ),
         appBar: AppBar(
           //leading: const Image(image: AssetImage("assets/icon_2_front.png")),
           title: Text(period.title),
@@ -95,15 +88,14 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
               firstDay: period.startRange,
               lastDay: period.endRange,
               focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => _teamDays[team].contains(day),
+              selectedDayPredicate: (day) => teamDays[team].contains(day),
               onDaySelected: onDaySelected,
               onPageChanged: (focusedDay) => _focusedDay = focusedDay,
               headerStyle: const HeaderStyle(
                   formatButtonVisible: false, titleCentered: true),
-              calendarStyle: const CalendarStyle(
+              calendarStyle: CalendarStyle(
                   selectedDecoration: BoxDecoration(
-                      color: Color.fromARGB(255, 134, 15, 84),
-                      shape: BoxShape.circle)),
+                      color: teamColors[team], shape: BoxShape.circle)),
             ),
           ],
         ),
@@ -124,7 +116,10 @@ class TeamsWidget extends HookConsumerWidget {
     final Duration periodDuration =
         period.endRange.difference(period.startRange);
     final daysInTeam = ref.watch(_daysInTeam);
-    final activatedTeam = ref.watch(_activatedTeam);
+    final team = ref.watch(_activatedTeam);
+    final teamDays = period.teamDays;
+    final teamColors = ref.watch(_teamColors);
+
     final int daysLeft =
         periodDuration.inDays - daysInTeam.reduce((a, b) => a + b);
 
@@ -174,8 +169,9 @@ class TeamsWidget extends HookConsumerWidget {
                   child: Column(
                     children: [
                       CheckboxListTile(
+                        activeColor: teamColors[j],
                         dense: true,
-                        value: j == activatedTeam,
+                        value: j == team,
                         onChanged: (value) {
                           ref.read(_activatedTeam.notifier).state = j;
                         },
@@ -185,7 +181,6 @@ class TeamsWidget extends HookConsumerWidget {
                         children: [
                           Flexible(
                             child: TextField(
-                              maxLength: 3,
                               decoration: const InputDecoration(
                                 labelText: 'Enter days',
                               ),
@@ -198,9 +193,14 @@ class TeamsWidget extends HookConsumerWidget {
                               },
                             ),
                           ),
-                          const IconButton(
-                            icon: Icon(Icons.playlist_remove),
-                            onPressed: null,
+                          IconButton(
+                            icon: const Icon(Icons.playlist_remove),
+                            onPressed: () {
+                              teamDays[team].clear();
+                              // A trick to force rebuild
+                              final int i = j != 0 ? 0 : 1;
+                              ref.read(_activatedTeam.notifier).state = i;
+                            },
                           ),
                         ],
                       ),

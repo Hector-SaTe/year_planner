@@ -81,6 +81,7 @@ class PeriodListItem extends ConsumerWidget {
     final period =
         ref.watch(periodListProvider.select((list) => list[periodIndex]));
     final Duration duration = period.endRange.difference(period.startRange);
+
     return ListTile(
       leading: const Padding(
         padding: EdgeInsets.all(4.0),
@@ -89,6 +90,7 @@ class PeriodListItem extends ConsumerWidget {
       title: Text(period.title),
       trailing: Text("${duration.inDays} days"),
       onTap: () {
+        //print("position $periodIndex : ${period.teamDays}");
         ref.read(selectedItemIndex.notifier).state = periodIndex;
         Navigator.push(
           context,
