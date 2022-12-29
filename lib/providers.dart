@@ -15,11 +15,3 @@ final periodListProvider =
 
 final currentItemIndex = Provider<int>((ref) => throw UnimplementedError());
 final selectedItemIndex = StateProvider<int>((_) => 0);
-
-final periodSelectionProvider = StateProvider<String>(((_) => exampleName));
-final selectedPeriodProvider = Provider<TimePeriod>(((ref) {
-  final selection = ref.watch(periodSelectionProvider);
-  final periodList = ref.watch(periodListProvider);
-
-  return periodList.firstWhere((item) => item.title == selection);
-}));

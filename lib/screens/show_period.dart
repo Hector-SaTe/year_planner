@@ -8,6 +8,13 @@ import 'package:year_planner/providers.dart';
 
 import '../utils.dart';
 
+// Private Model
+late List<Set<DateTime>> _teamDays;
+// Private Providers
+final _daysInTeam =
+    StateProvider.autoDispose<List<int>>(((ref) => [0, 0, 0, 0]));
+final _activatedTeam = StateProvider.autoDispose<int>(((ref) => 0));
+
 class ShowPeriod extends StatefulHookConsumerWidget {
   const ShowPeriod({super.key});
 
@@ -17,40 +24,69 @@ class ShowPeriod extends StatefulHookConsumerWidget {
 
 class _ShowPeriodState extends ConsumerState<ShowPeriod> {
   //DateTime _focusedDay = DateTime.now();
-  DateTime? _focusedDay;
-  // Using a `LinkedHashSet` is recommended due to equality comparison override
-  final Set<DateTime> _selectedDays = LinkedHashSet<DateTime>(
-    equals: isSameDay,
-    hashCode: getHashCode,
-  );
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    setState(() {
-      _focusedDay = focusedDay;
-      // Update values in a Set
-      if (_selectedDays.contains(selectedDay)) {
-        _selectedDays.remove(selectedDay);
-      } else {
-        _selectedDays.add(selectedDay);
+  late DateTime _focusedDay;
+
+  @override
+  void initState() {
+    //initialise values
+    final periodIndex = ref.read(selectedItemIndex);
+    final period =
+        ref.read(periodListProvider.select((list) => list[periodIndex]));
+    _focusedDay = period.startRange;
+    if (period.teamDays.isNotEmpty) {
+      for (var i = 0; i < period.teamDays.length; i++) {
+        _teamDays[i] = {...period.teamDays[i]};
       }
-    });
+    } else {
+      _teamDays = List.generate(
+          4,
+          ((index) => LinkedHashSet<DateTime>(
+                equals: isSameDay,
+                hashCode: getHashCode,
+              )),
+          growable: false);
+    }
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final team = ref.watch(_activatedTeam);
     final periodIndex = ref.watch(selectedItemIndex);
     final period =
         ref.watch(periodListProvider.select((list) => list[periodIndex]));
-    _focusedDay ??= period.startRange;
+
+    void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+      setState(() {
+        _focusedDay = focusedDay;
+        // Update values in a Set
+        if (_teamDays[team].contains(selectedDay)) {
+          _teamDays[team].remove(selectedDay);
+        } else {
+          _teamDays[team].add(selectedDay);
+        }
+      });
+    }
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          //backgroundColor: deactivated ? Colors.grey : null,
+          onPressed: () {
+            ref
+                .read(periodListProvider.notifier)
+                .addInfoAt(periodIndex, _teamDays);
+          },
+          tooltip: 'save changes',
+          child: const Icon(Icons.save),
+        ),
         appBar: AppBar(
           //leading: const Image(image: AssetImage("assets/icon_2_front.png")),
           title: Text(period.title),
         ),
         body: ListView(
-          padding: const EdgeInsets.only(top: 20),
+          padding: const EdgeInsets.only(bottom: 100),
           children: [
             TeamsWidget(period),
             TableCalendar(
@@ -58,12 +94,16 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
               calendarFormat: CalendarFormat.month,
               firstDay: period.startRange,
               lastDay: period.endRange,
-              focusedDay: _focusedDay!,
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => _teamDays[team].contains(day),
+              onDaySelected: onDaySelected,
+              onPageChanged: (focusedDay) => _focusedDay = focusedDay,
               headerStyle: const HeaderStyle(
                   formatButtonVisible: false, titleCentered: true),
-              selectedDayPredicate: (day) => _selectedDays.contains(day),
-              onDaySelected: _onDaySelected,
-              onPageChanged: (focusedDay) => _focusedDay = focusedDay,
+              calendarStyle: const CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                      color: Color.fromARGB(255, 134, 15, 84),
+                      shape: BoxShape.circle)),
             ),
           ],
         ),
@@ -71,17 +111,6 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     );
   }
 }
-
-final _daysInTeam =
-    StateProvider.autoDispose<List<int>>(((ref) => [0, 0, 0, 0]));
-final _activatedTeam = StateProvider.autoDispose<List<bool>>(
-    ((ref) => [true, false, false, false]));
-final _rangePerTeam = StateProvider(((ref) {
-  final Set<DateTime> selectedDays = LinkedHashSet<DateTime>(
-    equals: isSameDay,
-    hashCode: getHashCode,
-  );
-}));
 
 class TeamsWidget extends HookConsumerWidget {
   final TimePeriod period;
@@ -92,7 +121,6 @@ class TeamsWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final periodIndex = ref.watch(selectedItemIndex);
     final Duration periodDuration =
         period.endRange.difference(period.startRange);
     final daysInTeam = ref.watch(_daysInTeam);
@@ -140,21 +168,18 @@ class TeamsWidget extends HookConsumerWidget {
             runSpacing: 24,
             alignment: WrapAlignment.center,
             children: [
-              for (var i = 0; i < period.teams; i++)
+              for (var j = 0; j < period.teams; j++)
                 SizedBox(
                   width: 140,
                   child: Column(
                     children: [
                       CheckboxListTile(
                         dense: true,
-                        value: activatedTeam[i],
+                        value: j == activatedTeam,
                         onChanged: (value) {
-                          final List<bool> activated =
-                              List.generate(4, (index) => false);
-                          activated[i] = true;
-                          ref.read(_activatedTeam.notifier).state = activated;
+                          ref.read(_activatedTeam.notifier).state = j;
                         },
-                        title: Text("Team ${i + 1}:"),
+                        title: Text("Team ${j + 1}:"),
                       ),
                       Row(
                         children: [
@@ -166,15 +191,15 @@ class TeamsWidget extends HookConsumerWidget {
                               ),
                               onChanged: (value) {
                                 final List<int> selectedDays = [...daysInTeam];
-                                selectedDays[i] = int.tryParse(value) ?? 0;
+                                selectedDays[j] = int.tryParse(value) ?? 0;
                                 ref.read(_daysInTeam.notifier).state =
                                     selectedDays;
                                 //textController.clear();
                               },
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.playlist_remove),
+                          const IconButton(
+                            icon: Icon(Icons.playlist_remove),
                             onPressed: null,
                           ),
                         ],

@@ -1,19 +1,12 @@
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-enum TeamNames {
-  team1,
-  team2,
-  team3,
-  team4,
-}
-
 @immutable
 class TimePeriod {
   final DateTime startRange;
   final DateTime endRange;
   final String title;
-  final Map<String, String> dayInfo;
+  final List<Set<DateTime>> teamDays;
   final int teams;
 
   const TimePeriod(
@@ -21,7 +14,7 @@ class TimePeriod {
       required this.endRange,
       required this.title,
       required this.teams,
-      this.dayInfo = const {}});
+      this.teamDays = const []});
 }
 
 class TimePeriodList extends StateNotifier<List<TimePeriod>> {
@@ -38,37 +31,42 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
     ];
   }
 
-  void addInfo(String title, Map<String, String> dayInfo) {
-    state = [
-      for (final period in state)
-        if (period.title == title)
-          TimePeriod(
-              startRange: period.startRange,
-              endRange: period.endRange,
-              title: period.title,
-              teams: period.teams,
-              dayInfo: dayInfo)
-        else
-          period,
-    ];
+  void addInfoAt(int index, List<Set<DateTime>> teamDays) {
+    final period = state[index];
+    state[index] = TimePeriod(
+        startRange: period.startRange,
+        endRange: period.endRange,
+        title: period.title,
+        teams: period.teams,
+        teamDays: [...teamDays]);
   }
 
-  void editItem(String title, DateTime startRange, DateTime endRange) {
+  void editItem(
+      String title, DateTime startRange, DateTime endRange, int teams) {
+    // Do not edit title, else won't be found... or use idnex
     // TODO: add old dayInfo and remove days outside new range
     state = [
       for (final period in state)
         if (period.title == title)
           TimePeriod(
-              startRange: period.startRange,
-              endRange: period.endRange,
-              teams: period.teams,
-              title: period.title)
+              startRange: startRange,
+              endRange: endRange,
+              teams: teams,
+              title: title)
         else
           period,
     ];
   }
 
+  void editItemAt(int index, String title, DateTime startRange,
+      DateTime endRange, int teams) {
+    state[index] = TimePeriod(
+        startRange: startRange, endRange: endRange, teams: teams, title: title);
+  }
+
   void removeItem(String title) {
     state = state.where((item) => item.title != title).toList();
   }
+
+  void removeAt(int index) => state.removeAt(index);
 }

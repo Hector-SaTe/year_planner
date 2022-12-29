@@ -47,9 +47,9 @@ class MyHomePage extends ConsumerWidget {
           for (var i = 0; i < periodList.length; i++)
             Dismissible(
               key: ValueKey(periodList[i].title),
-              onDismissed: (direction) => ref
-                  .read(periodListProvider.notifier)
-                  .removeItem(periodList[i].title),
+              onDismissed: (direction) =>
+                  ref.read(periodListProvider.notifier).removeAt(i),
+              //.removeItem(periodList[i].title),
               child: ProviderScope(
                 overrides: [
                   //currentItem.overrideWithValue(periodList[i]),
