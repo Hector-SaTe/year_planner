@@ -80,7 +80,8 @@ class PeriodListItem extends ConsumerWidget {
     final periodIndex = ref.watch(currentItemIndex);
     final period =
         ref.watch(periodListProvider.select((list) => list[periodIndex]));
-    final Duration duration = period.endRange.difference(period.startRange);
+    final Duration duration =
+        period.endRange.difference(period.startRange) + const Duration(days: 1);
 
     return ListTile(
       leading: const Padding(

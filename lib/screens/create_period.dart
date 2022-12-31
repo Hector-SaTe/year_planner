@@ -18,7 +18,6 @@ class SelectRange extends StatefulWidget {
 
 class _SelectRangeState extends State<SelectRange> {
   final lastDay = DateTime(kToday.year, kToday.month + 12, kToday.day);
-  final CalendarFormat _calendarFormat = CalendarFormat.month;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
       .toggledOn; // Can be toggled on/off by longpressing a date
   DateTime _focusedDay = DateTime.now();
@@ -39,16 +38,17 @@ class _SelectRangeState extends State<SelectRange> {
         children: [
           const TitleInput(),
           TableCalendar(
+            startingDayOfWeek: StartingDayOfWeek.monday,
             firstDay: kFirstDay,
             lastDay: lastDay,
             focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             rangeStartDay: _rangeStart,
             rangeEndDay: _rangeEnd,
-            calendarFormat: _calendarFormat,
+            calendarFormat: CalendarFormat.month,
             rangeSelectionMode: _rangeSelectionMode,
             headerStyle: const HeaderStyle(
                 formatButtonVisible: false, titleCentered: true),
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
               if (!isSameDay(_selectedDay, selectedDay)) {
                 setState(() {
@@ -69,7 +69,8 @@ class _SelectRangeState extends State<SelectRange> {
                 _rangeEnd = end;
                 _rangeSelectionMode = RangeSelectionMode.toggledOn;
                 if (start != null && end != null) {
-                  _rangeDuration = end.difference(start);
+                  _rangeDuration =
+                      end.difference(start) + const Duration(days: 1);
                 } else {
                   _rangeDuration = const Duration(days: 0);
                 }
@@ -119,7 +120,7 @@ class TitleInput extends HookConsumerWidget {
             controller: textController,
             maxLength: 20,
             decoration: const InputDecoration(
-              labelText: 'Enter title here',
+              labelText: 'Enter title',
             ),
             onChanged: (value) {
               ref.read(_titleProvider.notifier).state = value;
@@ -127,7 +128,7 @@ class TitleInput extends HookConsumerWidget {
             },
           ),
           Text(
-            "Enter number of teams to divide",
+            "Number of teams: ",
             style: Theme.of(context)
                 .textTheme
                 .titleMedium!
@@ -153,7 +154,7 @@ class TitleInput extends HookConsumerWidget {
                   ref.read(_teamsProvider.notifier).state = value!)),
           const SizedBox(height: 8),
           Text(
-            "Select range of the Period",
+            "Select the daterange for the Period",
             style: Theme.of(context)
                 .textTheme
                 .titleMedium!

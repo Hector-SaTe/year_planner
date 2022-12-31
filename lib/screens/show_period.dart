@@ -114,17 +114,19 @@ class TeamsWidget extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Duration periodDuration =
-        period.endRange.difference(period.startRange);
+        period.endRange.difference(period.startRange) + const Duration(days: 1);
+    final teamColors = ref.watch(_teamColors);
     final daysInTeam = ref.watch(_daysInTeam);
     final team = ref.watch(_activatedTeam);
     final teamDays = period.teamDays;
-    final teamColors = ref.watch(_teamColors);
 
-    final int daysLeft =
+    final int daysLeftSelected =
+        periodDuration.inDays - teamDays.fold(0, (a, b) => a + b.length);
+    final int daysLeftPlanned =
         periodDuration.inDays - daysInTeam.reduce((a, b) => a + b);
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
       child: Column(
         children: [
           Text(
@@ -134,83 +136,114 @@ class TeamsWidget extends HookConsumerWidget {
                 .titleMedium!
                 .copyWith(color: Theme.of(context).primaryColor),
           ),
-          (daysLeft == 0)
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.group_outlined,
-                      color: Colors.green,
-                    ),
-                    SizedBox(width: 20),
-                    Text("All days divided!")
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.group_off_outlined,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(width: 20),
-                    Text("Still $daysLeft days left..."),
-                  ],
-                ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
+          DaysLeftWidget(
+            daysLeft: daysLeftPlanned,
+            title: 'Planned days:',
+          ),
+          const SizedBox(height: 8),
           Wrap(
-            spacing: 24,
-            runSpacing: 24,
+            spacing: 20,
+            runSpacing: 20,
             alignment: WrapAlignment.center,
             children: [
               for (var j = 0; j < period.teams; j++)
                 SizedBox(
-                  width: 140,
-                  child: Column(
-                    children: [
-                      CheckboxListTile(
-                        activeColor: teamColors[j],
-                        dense: true,
-                        value: j == team,
-                        onChanged: (value) {
-                          ref.read(_activatedTeam.notifier).state = j;
-                        },
-                        title: Text("Team ${j + 1}:"),
-                      ),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: TextField(
-                              decoration: const InputDecoration(
-                                labelText: 'Enter days',
+                  width: 150,
+                  child: Card(
+                    margin: const EdgeInsets.all(0),
+                    elevation: 0,
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    child: Column(
+                      children: [
+                        CheckboxListTile(
+                          activeColor: teamColors[j],
+                          dense: false,
+                          value: j == team,
+                          onChanged: (value) {
+                            ref.read(_activatedTeam.notifier).state = j;
+                          },
+                          title: Text("Team ${j + 1}:"),
+                        ),
+                        Row(
+                          children: [
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: TextField(
+                                decoration: const InputDecoration(
+                                  filled: true,
+                                  isDense: true,
+                                  labelText: 'Enter days',
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (value) {
+                                  final List<int> selectedDays = [
+                                    ...daysInTeam
+                                  ];
+                                  selectedDays[j] = int.tryParse(value) ?? 0;
+                                  ref.read(_daysInTeam.notifier).state =
+                                      selectedDays;
+                                  //textController.clear();
+                                },
                               ),
-                              onChanged: (value) {
-                                final List<int> selectedDays = [...daysInTeam];
-                                selectedDays[j] = int.tryParse(value) ?? 0;
-                                ref.read(_daysInTeam.notifier).state =
-                                    selectedDays;
-                                //textController.clear();
+                            ),
+                            const SizedBox(width: 10),
+                            CircleAvatar(
+                              radius: 15,
+                              backgroundColor: teamColors[j],
+                              child: Text(teamDays[j].length.toString()),
+                            ),
+                            IconButton(
+                              splashRadius: 20,
+                              splashColor: teamColors[j],
+                              icon: const Icon(Icons.playlist_remove),
+                              onPressed: () {
+                                teamDays[team].clear();
+                                // A trick to force rebuild
+                                final int i = j != 0 ? 0 : 1;
+                                ref.read(_activatedTeam.notifier).state = i;
                               },
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.playlist_remove),
-                            onPressed: () {
-                              teamDays[team].clear();
-                              // A trick to force rebuild
-                              final int i = j != 0 ? 0 : 1;
-                              ref.read(_activatedTeam.notifier).state = i;
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
                   ),
                 ),
             ],
           ),
+          const SizedBox(height: 8),
+          DaysLeftWidget(daysLeft: daysLeftSelected, title: "Selected days:")
         ],
       ),
+    );
+  }
+}
+
+class DaysLeftWidget extends StatelessWidget {
+  final int daysLeft;
+  final String title;
+  const DaysLeftWidget({Key? key, required this.daysLeft, required this.title})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final Color iconColor = daysLeft == 0 ? Colors.green : Colors.orange;
+    final String text =
+        daysLeft == 0 ? "All days divided!" : "Still $daysLeft days left...";
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(title),
+        const SizedBox(width: 20),
+        Icon(
+          Icons.group_outlined,
+          color: iconColor,
+        ),
+        const SizedBox(width: 20),
+        Text(text)
+      ],
     );
   }
 }
