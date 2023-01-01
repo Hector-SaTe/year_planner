@@ -30,6 +30,9 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
   //DateTime _focusedDay = DateTime.now();
   late DateTime _focusedDay;
 
+  bool isInside(List<Set<DateTime>> list, DateTime day) => list.fold(false,
+      (previousValue, element) => previousValue || element.contains(day));
+
   @override
   void initState() {
     //initialise values
@@ -62,8 +65,12 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
       setState(() {
         _focusedDay = focusedDay;
-        // Update values in a Set
-        if (teamDays[team].contains(selectedDay)) {
+        // Day inside some team
+        if (isInside(teamDays, selectedDay) &&
+            !teamDays[team].contains(selectedDay)) {
+          print("day inside other team");
+          // add snackbar or popup
+        } else if (teamDays[team].contains(selectedDay)) {
           teamDays[team].remove(selectedDay);
         } else {
           teamDays[team].add(selectedDay);
@@ -75,7 +82,11 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          //leading: const Image(image: AssetImage("assets/icon_2_front.png")),
+          actions: const [
+            Image(image: AssetImage("assets/icon_2_front.png"), width: 45),
+
+            ///SizedBox(width: 5)
+          ],
           title: Text(period.title),
         ),
         body: ListView(
@@ -143,13 +154,13 @@ class TeamsWidget extends HookConsumerWidget {
           ),
           const SizedBox(height: 8),
           Wrap(
-            spacing: 20,
-            runSpacing: 20,
+            spacing: 16,
+            runSpacing: 16,
             alignment: WrapAlignment.center,
             children: [
               for (var j = 0; j < period.teams; j++)
                 SizedBox(
-                  width: 150,
+                  width: 160,
                   child: Card(
                     margin: const EdgeInsets.all(0),
                     elevation: 0,
@@ -173,7 +184,7 @@ class TeamsWidget extends HookConsumerWidget {
                                 decoration: const InputDecoration(
                                   filled: true,
                                   isDense: true,
-                                  labelText: 'Enter days',
+                                  labelText: 'planned',
                                   border: OutlineInputBorder(),
                                 ),
                                 onChanged: (value) {
@@ -191,7 +202,10 @@ class TeamsWidget extends HookConsumerWidget {
                             CircleAvatar(
                               radius: 15,
                               backgroundColor: teamColors[j],
-                              child: Text(teamDays[j].length.toString()),
+                              child: Text(
+                                teamDays[j].length.toString(),
+                                style: const TextStyle(color: Colors.white),
+                              ),
                             ),
                             IconButton(
                               splashRadius: 20,

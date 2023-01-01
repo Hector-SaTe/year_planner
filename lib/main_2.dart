@@ -4,10 +4,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'screens/show_period.dart';
-import 'pages/complex_example.dart';
-import 'pages/events_example.dart';
-import 'pages/multi_example.dart';
+import 'example/complex_example.dart';
+import 'example/events_example.dart';
+import 'example/multi_example.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));

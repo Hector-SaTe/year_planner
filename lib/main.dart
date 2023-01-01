@@ -34,9 +34,12 @@ class MyHomePage extends ConsumerWidget {
     final periodList = ref.watch(periodListProvider);
     return Scaffold(
       appBar: AppBar(
-        leading: const ImageIcon(
-          AssetImage("assets/icon_0.png"),
-          size: 24,
+        leading: const Padding(
+          padding: EdgeInsets.all(2.0),
+          child: ImageIcon(
+            AssetImage("assets/icon_0.png"),
+            size: 24,
+          ),
         ),
         title: const Text('Year Planner'),
       ),
@@ -49,10 +52,8 @@ class MyHomePage extends ConsumerWidget {
               key: ValueKey(periodList[i].title),
               onDismissed: (direction) =>
                   ref.read(periodListProvider.notifier).removeAt(i),
-              //.removeItem(periodList[i].title),
               child: ProviderScope(
                 overrides: [
-                  //currentItem.overrideWithValue(periodList[i]),
                   currentItemIndex.overrideWithValue(i),
                 ],
                 child: const PeriodListItem(),
@@ -86,7 +87,7 @@ class PeriodListItem extends ConsumerWidget {
     return ListTile(
       leading: const Padding(
         padding: EdgeInsets.all(4.0),
-        child: Image(image: AssetImage("assets/icon_2.png")),
+        child: Image(image: AssetImage("assets/icon_2_front.png")),
       ),
       title: Text(period.title),
       trailing: Text("${duration.inDays} days"),
