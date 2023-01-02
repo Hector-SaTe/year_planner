@@ -36,20 +36,20 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
   @override
   void initState() {
     //initialise values
-    final periodIndex = ref.read(selectedItemIndex);
-    final period =
-        ref.read(periodListProvider.select((list) => list[periodIndex]));
+    final periodId = ref.read(selectedItemId);
+    final period = ref.read(periodListProvider
+        .select((list) => list.where((item) => item.id == periodId).first));
     _focusedDay = period.startRange;
-    if (period.teamDays.isEmpty) {
-      final definedList = List.generate(
-          4,
-          ((index) => LinkedHashSet<DateTime>(
-                equals: isSameDay,
-                hashCode: getHashCode,
-              )),
-          growable: false);
-      ref.read(periodListProvider.notifier).addInfoAt(periodIndex, definedList);
-    }
+    // if (period.teamDays.isEmpty) {
+    //   final definedList = List.generate(
+    //       4,
+    //       ((index) => LinkedHashSet<DateTime>(
+    //             equals: isSameDay,
+    //             hashCode: getHashCode,
+    //           )),
+    //       growable: false);
+    //   ref.read(periodListProvider.notifier).addInfoAt(periodId, definedList);
+    // }
     super.initState();
   }
 
@@ -57,10 +57,11 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
   Widget build(BuildContext context) {
     final teamColors = ref.watch(_teamColors);
     final team = ref.watch(_activatedTeam);
-    final periodIndex = ref.watch(selectedItemIndex);
-    final period =
-        ref.watch(periodListProvider.select((list) => list[periodIndex]));
+    final periodId = ref.watch(selectedItemId);
+    final period = ref.watch(periodListProvider
+        .select((list) => list.where((item) => item.id == periodId).first));
     final teamDays = period.teamDays;
+    final getSaveManager = ref.watch(saveManagerProvider.future);
 
     void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
       setState(() {
@@ -110,6 +111,21 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
             ),
           ],
         ),
+        persistentFooterButtons: [
+          const Text("Save changes and return"),
+          IconButton(
+            icon: const Icon(Icons.arrow_circle_down),
+            onPressed: () {
+              getSaveManager.then((manager) => manager.modifyPeriod(period));
+              const message = SnackBar(
+                duration: Duration(seconds: 1),
+                content: Text('Yay! changes were saved'),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(message);
+              Navigator.pop(context);
+            },
+          )
+        ],
       ),
     );
   }

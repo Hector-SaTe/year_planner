@@ -32,6 +32,9 @@ class MyHomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final periodList = ref.watch(periodListProvider);
+    //final savedPeriodList = ref.watch(savedPeriodProvider);
+    final getSaveManager = ref.watch(saveManagerProvider.future);
+
     return Scaffold(
       appBar: AppBar(
         leading: const Padding(
@@ -47,20 +50,43 @@ class MyHomePage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           const Text('Select one time period to see:'),
-          for (var i = 0; i < periodList.length; i++)
+          for (final item in periodList)
             Dismissible(
-              key: ValueKey(periodList[i].title),
-              onDismissed: (direction) =>
-                  ref.read(periodListProvider.notifier).removeAt(i),
+              key: ValueKey(item.id),
+              onDismissed: (direction) {
+                getSaveManager.then((manager) {
+                  // delete element from local storage
+                  manager.removePeriod(item.id);
+                  // delete element from memory list
+                  ref.read(periodListProvider.notifier).removeItem(item.id);
+                });
+              },
               child: ProviderScope(
                 overrides: [
-                  currentItemIndex.overrideWithValue(i),
+                  currentItemId.overrideWithValue(item.id),
                 ],
                 child: const PeriodListItem(),
               ),
             )
         ],
       ),
+      persistentFooterButtons: [
+        const Text("Load List"),
+        IconButton(
+          icon: const Icon(Icons.arrow_circle_up),
+          onPressed: () async {
+            ref.invalidate(savedPeriodProvider);
+            ref.read(savedPeriodProvider.future).then((savedList) {
+              ref.read(periodListProvider.notifier).addSavedItems(savedList);
+            });
+          },
+        ),
+        // const Text("Save List"),
+        // IconButton(
+        //   icon: const Icon(Icons.arrow_circle_down),
+        //   onPressed: (() => null),
+        // )
+      ],
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
@@ -78,9 +104,9 @@ class PeriodListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final periodIndex = ref.watch(currentItemIndex);
-    final period =
-        ref.watch(periodListProvider.select((list) => list[periodIndex]));
+    final periodId = ref.watch(currentItemId);
+    final period = ref.watch(periodListProvider
+        .select((list) => list.where((item) => item.id == periodId).first));
     final Duration duration =
         period.endRange.difference(period.startRange) + const Duration(days: 1);
 
@@ -92,8 +118,7 @@ class PeriodListItem extends ConsumerWidget {
       title: Text(period.title),
       trailing: Text("${duration.inDays} days"),
       onTap: () {
-        //print("position $periodIndex : ${period.teamDays}");
-        ref.read(selectedItemIndex.notifier).state = periodIndex;
+        ref.read(selectedItemId.notifier).state = periodId;
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ShowPeriod()),

@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 @immutable
 class TimePeriod {
+  final int id;
   final DateTime startRange;
   final DateTime endRange;
   final String title;
@@ -10,7 +11,8 @@ class TimePeriod {
   final int teams;
 
   const TimePeriod(
-      {required this.startRange,
+      {required this.id,
+      required this.startRange,
       required this.endRange,
       required this.title,
       required this.teams,
@@ -19,54 +21,36 @@ class TimePeriod {
 
 class TimePeriodList extends StateNotifier<List<TimePeriod>> {
   TimePeriodList([List<TimePeriod>? initialList]) : super(initialList ?? []);
-  void addItem(
-      String title, DateTime startRange, DateTime endRange, int teams) {
-    state = [
-      ...state,
-      TimePeriod(
-          startRange: startRange,
-          endRange: endRange,
-          title: title,
-          teams: teams)
-    ];
+
+  void addItem(TimePeriod newPeriod) {
+    state = [...state, newPeriod];
   }
 
-  void addInfoAt(int index, List<Set<DateTime>> teamDays) {
-    final period = state[index];
-    state[index] = TimePeriod(
+  void addSavedItems(List<TimePeriod> savedList) {
+    state = savedList;
+  }
+
+  void addInfoAt(int id, List<Set<DateTime>> teamDays) {
+    final period = state.where((item) => item.id == id).first;
+    final modPeriod = TimePeriod(
         startRange: period.startRange,
         endRange: period.endRange,
         title: period.title,
         teams: period.teams,
-        teamDays: [...teamDays]);
+        teamDays: [...teamDays],
+        id: period.id);
+    editItem(id, modPeriod);
   }
 
-  void editItem(
-      String title, DateTime startRange, DateTime endRange, int teams) {
-    // Do not edit title, else won't be found... or use idnex
-    // TODO: add old dayInfo and remove days outside new range
+  void editItem(int id, TimePeriod modPeriod) {
     state = [
       for (final period in state)
-        if (period.title == title)
-          TimePeriod(
-              startRange: startRange,
-              endRange: endRange,
-              teams: teams,
-              title: title)
-        else
-          period,
+        if (period.id == id) modPeriod else period,
     ];
   }
 
-  void editItemAt(int index, String title, DateTime startRange,
-      DateTime endRange, int teams) {
-    state[index] = TimePeriod(
-        startRange: startRange, endRange: endRange, teams: teams, title: title);
+  /// This remove notify listeners (rebuilds)
+  void removeItem(int id) {
+    state = state.where((item) => item.id != id).toList();
   }
-
-  void removeItem(String title) {
-    state = state.where((item) => item.title != title).toList();
-  }
-
-  void removeAt(int index) => state.removeAt(index);
 }
