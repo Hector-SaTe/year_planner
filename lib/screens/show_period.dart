@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:year_planner/database/db_model.dart';
 import 'package:year_planner/models.dart';
 import 'package:year_planner/providers.dart';
 
@@ -40,16 +41,16 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final period = ref.read(periodListProvider
         .select((list) => list.where((item) => item.id == periodId).first));
     _focusedDay = period.startRange;
-    // if (period.teamDays.isEmpty) {
-    //   final definedList = List.generate(
-    //       4,
-    //       ((index) => LinkedHashSet<DateTime>(
-    //             equals: isSameDay,
-    //             hashCode: getHashCode,
-    //           )),
-    //       growable: false);
-    //   ref.read(periodListProvider.notifier).addInfoAt(periodId, definedList);
-    // }
+    if (period.teamDays.isEmpty) {
+      final definedList = List.generate(
+          4,
+          ((index) => LinkedHashSet<DateTime>(
+                equals: isSameDay,
+                hashCode: getHashCode,
+              )),
+          growable: false);
+      ref.read(periodListProvider.notifier).addInfoAt(periodId, definedList);
+    }
     super.initState();
   }
 
@@ -61,7 +62,6 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final period = ref.watch(periodListProvider
         .select((list) => list.where((item) => item.id == periodId).first));
     final teamDays = period.teamDays;
-    final getSaveManager = ref.watch(saveManagerProvider.future);
 
     void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
       setState(() {
@@ -116,12 +116,8 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
           IconButton(
             icon: const Icon(Icons.arrow_circle_down),
             onPressed: () {
-              getSaveManager.then((manager) => manager.modifyPeriod(period));
-              const message = SnackBar(
-                duration: Duration(seconds: 1),
-                content: Text('Yay! changes were saved'),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(message);
+              final saveManager = ref.read(saveManagerProvider);
+              saveManager.addDaysToPeriod(period.id, teamDays);
               Navigator.pop(context);
             },
           )

@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -182,9 +183,10 @@ class SaveButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final saveManager = ref.watch(saveManagerProvider);
+
     final String title = ref.watch(_titleProvider);
     final int teams = ref.watch(_teamsProvider);
-    final getSaveManager = ref.watch(saveManagerProvider.future);
     bool deactivated =
         (title.isEmpty || _rangeStart == null || _rangeEnd == null);
     return FloatingActionButton(
@@ -192,16 +194,10 @@ class SaveButton extends ConsumerWidget {
       onPressed: deactivated
           ? null
           : () {
-              final newPeriod = Period()
-                ..startRange = _rangeStart!
-                ..endRange = _rangeEnd!
-                ..title = title
-                ..teamList = List.generate(4, (_) => DaySet()..days = [])
-                ..teams = teams;
-
-              getSaveManager.then((manager) {
-                manager.savePeriod(newPeriod);
-                //ref.read(periodListProvider.notifier).addItem(newPeriod);
+              saveManager
+                  .createPeriod(title, teams, _rangeStart!, _rangeEnd!)
+                  .then((newPeriod) {
+                ref.read(periodListProvider.notifier).addItem(newPeriod);
               });
               Navigator.pop(context);
             },

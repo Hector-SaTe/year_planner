@@ -1,74 +1,67 @@
-import 'package:isar/isar.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:year_planner/models.dart';
-
-part 'db_model.g.dart';
-
-@collection
-class Period {
-  Id id = Isar.autoIncrement;
-  @Index()
-  late DateTime startRange;
-  late DateTime endRange;
-  late String title;
-  late List<DaySet> teamList;
-  late int teams;
-}
-
-@embedded
-class DaySet {
-  late List<DateTime> days;
-}
 
 // Transfer class to convert from memory and save
 class SaveManager {
-  final Isar isar;
-  SaveManager(this.isar);
+  final String dbName = "periodList";
+  late final database = FirebaseDatabase.instance.ref(dbName);
 
-  Future<void> savePeriod(Period period) async {
-    // final newPeriod = Period()
-    //   ..startRange = timePeriod.startRange
-    //   ..endRange = timePeriod.endRange
-    //   ..title = timePeriod.title
-    //   ..teams = timePeriod.teams
-    //   ..teamList = timePeriod.teamDays
-    //       .map((set) => DaySet()..days = set.toList())
-    //       .toList();
-    await isar.writeTxn(() async {
-      await isar.periods.put(period);
+  Future<TimePeriod> createPeriod(
+      String title, int teams, DateTime startRange, DateTime endRange) async {
+    DatabaseReference newPeriodRef = database.push();
+    await newPeriodRef.set({
+      "title": title,
+      "teams": teams,
+      "startRange": startRange.toIso8601String(),
+      "endRange": endRange.toIso8601String(),
+      "teamList": []
+    });
+    return TimePeriod(
+        id: newPeriodRef.key!,
+        startRange: startRange,
+        endRange: endRange,
+        title: title,
+        teams: teams);
+  }
+
+  Future<void> addDaysToPeriod(String id, List<Set<DateTime>> teamDays) async {
+    await database.update({
+      "$id/teamList": teamDays
+          .map((team) => team.map((day) => day.toIso8601String()).toList())
+          .toList()
     });
   }
 
-  Future<void> modifyPeriod(TimePeriod timePeriod) async {
-    final selectedPeriod = await isar.periods.get(timePeriod.id);
-    if (selectedPeriod != null) {
-      selectedPeriod.teamList = timePeriod.teamDays
-          .map((set) => DaySet()..days = set.toList())
-          .toList();
-      await isar.writeTxn(() async {
-        await isar.periods.put(selectedPeriod);
-      });
-    }
-  }
-
-  Future<void> removePeriod(int id) async {
-    await isar.writeTxn(() async {
-      await isar.periods.delete(id);
-    });
+  Future<void> removePeriod(String id) async {
+    await FirebaseDatabase.instance.ref("$dbName/$id").remove();
   }
 
   Future<List<TimePeriod>> getPeriods() async {
-    final List<Period> list = await isar.periods.where().findAll();
-    return list
-        .map((period) => TimePeriod(
-              id: period.id,
-              startRange: period.startRange,
-              endRange: period.endRange,
-              title: period.title,
-              teams: period.teams,
-              teamDays: period.teamList
-                  .map((set) => set.days.map((day) => day.toUtc()).toSet())
-                  .toList(),
-            ))
-        .toList();
+    final snapshot = await database.get();
+    if (snapshot.children.isNotEmpty) {
+      final periods = snapshot.children.map((item) {
+        final List<Set<DateTime>> teamDays = [];
+        if (item.child("teamList").exists) {
+          final teams = item.child("teamList").value as List;
+          for (var team in teams) {
+            final days = List.castFrom(team)
+                .map((day) => DateTime.parse(day.toString()))
+                .toSet();
+            teamDays.add(days);
+          }
+        }
+        return TimePeriod(
+          id: item.key!,
+          startRange: DateTime.parse(item.child("startRange").value.toString()),
+          endRange: DateTime.parse(item.child("endRange").value.toString()),
+          title: item.child("title").value.toString(),
+          teams: item.child("teams").value as int,
+          teamDays: teamDays,
+        );
+      }).toList();
+      return periods;
+    } else {
+      return const [];
+    }
   }
 }

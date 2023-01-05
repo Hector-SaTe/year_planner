@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "362912793108",
+    "firebase_url": "https://year-planner-hst-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "year-planner-hst",
+    "storage_bucket": "year-planner-hst.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362912793108:android:e552ea3f623668e035dd01",
+        "android_client_info": {
+          "package_name": "com.hesate.year_planner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362912793108-hhf3c3rvmd4o452gp4hcv2pdpos449m1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD76UTmmdquYlUvmaud0sNSIWQm3SO9NYg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362912793108-hhf3c3rvmd4o452gp4hcv2pdpos449m1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "362912793108-062t1va8h22vqci83erq4hd7sdos7mop.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.hesate.year-planner"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -22,6 +22,10 @@ dependencies:
   simple_gesture_detector: ^0.2.0
   isar: ^3.0.5
   isar_flutter_libs: ^3.0.5
+  firebase_core: ^2.4.1
+  firebase_auth: ^4.2.4
+  firebase_database: ^10.0.9
+  firebase_analytics: ^10.1.0
 
 dev_dependencies:
   flutter_test:
@@ -44,8 +48,8 @@ flutter_icons:
   image_path_ios: "assets/icon_1.png"
   android: true 
   ios: true 
-  adaptive_icon_background: "assets/icon_2_front.png"
-  adaptive_icon_foreground: "assets/icon_2_back.png"
+  adaptive_icon_foreground: "assets/icon_2_front.png"
+  adaptive_icon_background: "assets/icon_2_back.png"
   min_sdk_android: 21
   #remove_alpha_ios: true
   web:

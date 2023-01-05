@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 @immutable
 class TimePeriod {
-  final int id;
+  final String id;
   final DateTime startRange;
   final DateTime endRange;
   final String title;
@@ -30,7 +30,7 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
     state = savedList;
   }
 
-  void addInfoAt(int id, List<Set<DateTime>> teamDays) {
+  void addInfoAt(String id, List<Set<DateTime>> teamDays) {
     final period = state.where((item) => item.id == id).first;
     final modPeriod = TimePeriod(
         startRange: period.startRange,
@@ -42,15 +42,18 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
     editItem(id, modPeriod);
   }
 
-  void editItem(int id, TimePeriod modPeriod) {
-    state = [
-      for (final period in state)
-        if (period.id == id) modPeriod else period,
-    ];
+  void editItem(String id, TimePeriod modPeriod) {
+    // Do not modify the whole state to avoid rebuild
+    final pos = state.indexWhere((item) => item.id == id);
+    state[pos] = modPeriod;
+    // state = [
+    //   for (final period in state)
+    //     if (period.id == id) modPeriod else period,
+    // ];
   }
 
   /// This remove notify listeners (rebuilds)
-  void removeItem(int id) {
+  void removeItem(String id) {
     state = state.where((item) => item.id != id).toList();
   }
 }

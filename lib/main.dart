@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -5,7 +6,13 @@ import 'package:year_planner/screens/show_period.dart';
 import 'package:year_planner/screens/create_period.dart';
 import 'package:year_planner/providers.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   initializeDateFormatting()
       .then((_) => runApp(const ProviderScope(child: MyApp())));
 }
@@ -32,8 +39,7 @@ class MyHomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final periodList = ref.watch(periodListProvider);
-    //final savedPeriodList = ref.watch(savedPeriodProvider);
-    final getSaveManager = ref.watch(saveManagerProvider.future);
+    final saveManager = ref.watch(saveManagerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -54,9 +60,7 @@ class MyHomePage extends ConsumerWidget {
             Dismissible(
               key: ValueKey(item.id),
               onDismissed: (direction) {
-                getSaveManager.then((manager) {
-                  // delete element from local storage
-                  manager.removePeriod(item.id);
+                saveManager.removePeriod(item.id).then((manager) {
                   // delete element from memory list
                   ref.read(periodListProvider.notifier).removeItem(item.id);
                 });
@@ -75,10 +79,12 @@ class MyHomePage extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.arrow_circle_up),
           onPressed: () async {
-            ref.invalidate(savedPeriodProvider);
-            ref.read(savedPeriodProvider.future).then((savedList) {
-              ref.read(periodListProvider.notifier).addSavedItems(savedList);
-            });
+            saveManager.getPeriods().then((dbPeriods) =>
+                ref.read(periodListProvider.notifier).addSavedItems(dbPeriods));
+            // ref.invalidate(savedPeriodProvider);
+            // ref.read(savedPeriodProvider.future).then((savedList) {
+            //   ref.read(periodListProvider.notifier).addSavedItems(savedList);
+            // });
           },
         ),
         // const Text("Save List"),
@@ -122,7 +128,16 @@ class PeriodListItem extends ConsumerWidget {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ShowPeriod()),
-        );
+        ).then((value) {
+          /// TODO implement automatic save
+          // final saveManager = ref.read(saveManagerProvider);
+          //     saveManager.addDaysToPeriod(period.id, teamDays);
+          const message = SnackBar(
+            duration: Duration(seconds: 2),
+            content: Text('Nice! changes were saved'),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(message);
+        });
       },
     );
   }

@@ -1,18 +1,16 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:isar/isar.dart';
 import 'package:year_planner/database/db_model.dart';
 import 'models.dart';
 
-/// Local Database Provider
-final isarPeriodInstance = FutureProvider(((ref) => Isar.open([PeriodSchema])));
-final saveManagerProvider = FutureProvider(((ref) async {
-  final isar = await ref.watch(isarPeriodInstance.future);
-  return SaveManager(isar);
+/// Database Provider
+final saveManagerProvider = Provider<SaveManager>(((ref) {
+  return SaveManager();
 }));
-final savedPeriodProvider = FutureProvider(((ref) async {
-  final saveManager = await ref.watch(saveManagerProvider.future);
-  return saveManager.getPeriods();
-}));
+// final savedPeriodProvider = FutureProvider<List<TimePeriod>>(((ref) {
+//   final saveManager = ref.watch(saveManagerProvider);
+//   return saveManager.getPeriods();
+// }));
 
 /// Global data provider
 final periodListProvider =
@@ -32,5 +30,5 @@ final periodListProvider =
   // }
 }));
 
-final currentItemId = Provider<int>((ref) => throw UnimplementedError());
-final selectedItemId = StateProvider<int>((_) => 0);
+final currentItemId = Provider<String>((ref) => throw UnimplementedError());
+final selectedItemId = StateProvider<String>((_) => "");
