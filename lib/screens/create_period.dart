@@ -193,8 +193,8 @@ class SaveButton extends ConsumerWidget {
       backgroundColor: deactivated ? Colors.grey : null,
       onPressed: deactivated
           ? null
-          : () {
-              saveManager
+          : () async {
+              await saveManager
                   .createPeriod(title, teams, _rangeStart!, _rangeEnd!)
                   .then((newPeriod) {
                 ref.read(periodListProvider.notifier).addItem(newPeriod);

@@ -132,11 +132,11 @@ class PeriodListItem extends ConsumerWidget {
           /// TODO implement automatic save
           // final saveManager = ref.read(saveManagerProvider);
           //     saveManager.addDaysToPeriod(period.id, teamDays);
-          const message = SnackBar(
-            duration: Duration(seconds: 2),
-            content: Text('Nice! changes were saved'),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(message);
+          // const message = SnackBar(
+          //   duration: Duration(seconds: 2),
+          //   content: Text('Nice! changes were saved'),
+          // );
+          // ScaffoldMessenger.of(context).showSnackBar(message);
         });
       },
     );

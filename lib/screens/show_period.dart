@@ -3,15 +3,12 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:year_planner/database/db_model.dart';
 import 'package:year_planner/models.dart';
 import 'package:year_planner/providers.dart';
 
 import '../utils.dart';
 
 // Private Providers
-final _daysInTeam =
-    StateProvider.autoDispose<List<int>>(((ref) => [0, 0, 0, 0]));
 final _activatedTeam = StateProvider.autoDispose<int>(((ref) => 0));
 final _teamColors = Provider.autoDispose((ref) => [
       const Color.fromARGB(255, 20, 51, 191),
@@ -28,7 +25,6 @@ class ShowPeriod extends StatefulHookConsumerWidget {
 }
 
 class _ShowPeriodState extends ConsumerState<ShowPeriod> {
-  //DateTime _focusedDay = DateTime.now();
   late DateTime _focusedDay;
 
   bool isInside(List<Set<DateTime>> list, DateTime day) => list.fold(false,
@@ -111,17 +107,20 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
             ),
           ],
         ),
-        persistentFooterButtons: [
-          const Text("Save changes and return"),
-          IconButton(
-            icon: const Icon(Icons.arrow_circle_down),
-            onPressed: () {
-              final saveManager = ref.read(saveManagerProvider);
-              saveManager.addDaysToPeriod(period.id, teamDays);
-              Navigator.pop(context);
-            },
-          )
-        ],
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            final saveManager = ref.read(saveManagerProvider);
+            saveManager.addDaysToPeriod(period.id, teamDays);
+            const message = SnackBar(
+              duration: Duration(seconds: 1),
+              content: Text('Nice! changes were saved'),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(message);
+            Navigator.pop(context);
+          },
+          tooltip: 'save changes',
+          child: const Icon(Icons.save),
+        ),
       ),
     );
   }
@@ -139,14 +138,11 @@ class TeamsWidget extends HookConsumerWidget {
     final Duration periodDuration =
         period.endRange.difference(period.startRange) + const Duration(days: 1);
     final teamColors = ref.watch(_teamColors);
-    final daysInTeam = ref.watch(_daysInTeam);
     final team = ref.watch(_activatedTeam);
     final teamDays = period.teamDays;
 
     final int daysLeftSelected =
         periodDuration.inDays - teamDays.fold(0, (a, b) => a + b.length);
-    final int daysLeftPlanned =
-        periodDuration.inDays - daysInTeam.reduce((a, b) => a + b);
 
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -160,10 +156,7 @@ class TeamsWidget extends HookConsumerWidget {
                 .copyWith(color: Theme.of(context).primaryColor),
           ),
           const SizedBox(height: 8),
-          DaysLeftWidget(
-            daysLeft: daysLeftPlanned,
-            title: 'Planned days:',
-          ),
+          DaysLeftWidget(daysLeft: daysLeftSelected, title: "Selected days:"),
           const SizedBox(height: 8),
           Wrap(
             spacing: 16,
@@ -172,7 +165,7 @@ class TeamsWidget extends HookConsumerWidget {
             children: [
               for (var j = 0; j < period.teams; j++)
                 SizedBox(
-                  width: 160,
+                  width: 140,
                   child: Card(
                     margin: const EdgeInsets.all(0),
                     elevation: 0,
@@ -181,7 +174,7 @@ class TeamsWidget extends HookConsumerWidget {
                       children: [
                         CheckboxListTile(
                           activeColor: teamColors[j],
-                          dense: false,
+                          dense: true,
                           value: j == team,
                           onChanged: (value) {
                             ref.read(_activatedTeam.notifier).state = j;
@@ -189,30 +182,10 @@ class TeamsWidget extends HookConsumerWidget {
                           title: Text("Team ${j + 1}:"),
                         ),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: TextField(
-                                decoration: const InputDecoration(
-                                  filled: true,
-                                  isDense: true,
-                                  labelText: 'planned',
-                                  border: OutlineInputBorder(),
-                                ),
-                                onChanged: (value) {
-                                  final List<int> selectedDays = [
-                                    ...daysInTeam
-                                  ];
-                                  selectedDays[j] = int.tryParse(value) ?? 0;
-                                  ref.read(_daysInTeam.notifier).state =
-                                      selectedDays;
-                                  //textController.clear();
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 10),
                             CircleAvatar(
-                              radius: 15,
+                              radius: 20,
                               backgroundColor: teamColors[j],
                               child: Text(
                                 teamDays[j].length.toString(),
@@ -220,7 +193,10 @@ class TeamsWidget extends HookConsumerWidget {
                               ),
                             ),
                             IconButton(
-                              splashRadius: 20,
+                              padding: const EdgeInsets.all(0),
+                              color: Colors.red.shade900,
+                              iconSize: 20,
+                              splashRadius: 25,
                               splashColor: teamColors[j],
                               icon: const Icon(Icons.playlist_remove),
                               onPressed: () {
@@ -240,7 +216,6 @@ class TeamsWidget extends HookConsumerWidget {
             ],
           ),
           const SizedBox(height: 8),
-          DaysLeftWidget(daysLeft: daysLeftSelected, title: "Selected days:")
         ],
       ),
     );
