@@ -105,8 +105,6 @@ PODS:
   - GoogleUtilities/UserDefaults (7.10.0):
     - GoogleUtilities/Logger
   - GTMSessionFetcher/Core (3.0.0)
-  - isar_flutter_libs (1.0.0):
-    - Flutter
   - leveldb-library (1.22.1)
   - nanopb (2.30909.0):
     - nanopb/decode (= 2.30909.0)
@@ -121,7 +119,6 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
   - Flutter (from `Flutter`)
-  - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
 
 SPEC REPOS:
   trunk:
@@ -150,8 +147,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_database/ios"
   Flutter:
     :path: Flutter
-  isar_flutter_libs:
-    :path: ".symlinks/plugins/isar_flutter_libs/ios"
 
 SPEC CHECKSUMS:
   Firebase: f92fc551ead69c94168d36c2b26188263860acd9
@@ -169,7 +164,6 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: c7d6fff39bf2d829587d74088d582e32d75133c3
   GoogleUtilities: bad72cb363809015b1f7f19beb1f1cd23c589f95
   GTMSessionFetcher: c1edebe64e9fb4e8f6415d018edf1fd3eac074a1
-  isar_flutter_libs: b69f437aeab9c521821c3f376198c4371fa21073
   leveldb-library: 50c7b45cbd7bf543c81a468fe557a16ae3db8729
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
