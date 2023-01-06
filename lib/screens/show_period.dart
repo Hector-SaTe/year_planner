@@ -58,6 +58,8 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final period = ref.watch(periodListProvider
         .select((list) => list.where((item) => item.id == periodId).first));
     final teamDays = period.teamDays;
+    final totalDays = teamDays.fold(
+        Set(), (previousValue, element) => {...previousValue, ...element});
 
     void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
       setState(() {
@@ -73,6 +75,24 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
           teamDays[team].add(selectedDay);
         }
       });
+    }
+
+    Widget? daySelected(
+        BuildContext context, DateTime selectedDay, DateTime focusedDay) {
+      if (teamDays[0].contains(selectedDay)) {
+        //teamDays[team].remove(selectedDay);
+        return Container(
+          color: Colors.amber,
+          width: 5,
+          height: 5,
+        );
+      } else {
+        return Container(
+          color: Colors.teal,
+          width: 5,
+          height: 5,
+        );
+      }
     }
 
     return GestureDetector(
@@ -96,6 +116,8 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
               firstDay: period.startRange,
               lastDay: period.endRange,
               focusedDay: _focusedDay,
+              //calendarBuilders: CalendarBuilders(selectedBuilder: daySelected),
+              //selectedDayPredicate: (day) => totalDays.contains(day),
               selectedDayPredicate: (day) => teamDays[team].contains(day),
               onDaySelected: onDaySelected,
               onPageChanged: (focusedDay) => _focusedDay = focusedDay,

@@ -7,11 +7,13 @@ class TimePeriod {
   final DateTime startRange;
   final DateTime endRange;
   final String title;
+  final String pass;
   final List<Set<DateTime>> teamDays;
   final int teams;
 
   const TimePeriod(
       {required this.id,
+      required this.pass,
       required this.startRange,
       required this.endRange,
       required this.title,
@@ -36,6 +38,7 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
         startRange: period.startRange,
         endRange: period.endRange,
         title: period.title,
+        pass: period.pass,
         teams: period.teams,
         teamDays: [...teamDays],
         id: period.id);

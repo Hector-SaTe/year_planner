@@ -3,15 +3,15 @@ import 'package:year_planner/models.dart';
 
 // Transfer class to convert from memory and save
 class SaveManager {
-  final String dbName = "periodList";
-  late final database = FirebaseDatabase.instance.ref(dbName);
+  final database = FirebaseDatabase.instance.ref("periodList");
 
-  Future<TimePeriod> createPeriod(
-      String title, int teams, DateTime startRange, DateTime endRange) async {
+  Future<TimePeriod> createPeriod(String title, int teams, DateTime startRange,
+      DateTime endRange, String pass) async {
     DatabaseReference newPeriodRef = database.push();
     await newPeriodRef.set({
       "title": title,
       "teams": teams,
+      "pass": pass,
       "startRange": startRange.toIso8601String(),
       "endRange": endRange.toIso8601String(),
       "teamList": []
@@ -21,6 +21,7 @@ class SaveManager {
         startRange: startRange,
         endRange: endRange,
         title: title,
+        pass: pass,
         teams: teams);
   }
 
@@ -33,7 +34,7 @@ class SaveManager {
   }
 
   Future<void> removePeriod(String id) async {
-    await FirebaseDatabase.instance.ref("$dbName/$id").remove();
+    await database.child(id).remove();
   }
 
   Future<List<TimePeriod>> getPeriods() async {
@@ -50,8 +51,10 @@ class SaveManager {
             teamDays.add(days);
           }
         }
+        print(item.child("pass").value.toString());
         return TimePeriod(
           id: item.key!,
+          pass: item.child("pass").value.toString(),
           startRange: DateTime.parse(item.child("startRange").value.toString()),
           endRange: DateTime.parse(item.child("endRange").value.toString()),
           title: item.child("title").value.toString(),

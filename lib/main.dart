@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:year_planner/screens/show_period.dart';
 import 'package:year_planner/screens/create_period.dart';
 import 'package:year_planner/providers.dart';
@@ -107,6 +108,8 @@ class MyHomePage extends ConsumerWidget {
 
 class PeriodListItem extends ConsumerWidget {
   const PeriodListItem({Key? key}) : super(key: key);
+  String dateToString(DateTime date) =>
+      DateFormat('dd.MM.yy', 'es').format(date);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -122,22 +125,15 @@ class PeriodListItem extends ConsumerWidget {
         child: Image(image: AssetImage("assets/icon_2_front.png")),
       ),
       title: Text(period.title),
+      subtitle: Text(
+          "${dateToString(period.startRange)} to ${dateToString(period.endRange)}"),
       trailing: Text("${duration.inDays} days"),
       onTap: () {
         ref.read(selectedItemId.notifier).state = periodId;
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ShowPeriod()),
-        ).then((value) {
-          /// TODO implement automatic save
-          // final saveManager = ref.read(saveManagerProvider);
-          //     saveManager.addDaysToPeriod(period.id, teamDays);
-          // const message = SnackBar(
-          //   duration: Duration(seconds: 2),
-          //   content: Text('Nice! changes were saved'),
-          // );
-          // ScaffoldMessenger.of(context).showSnackBar(message);
-        });
+        );
       },
     );
   }
