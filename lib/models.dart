@@ -32,30 +32,39 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
     state = savedList;
   }
 
-  void addInfoAt(String id, List<Set<DateTime>> teamDays) {
+  void saveEdit(
+      String id, String title, List<Set<DateTime>> teamDays, bool rebuild) {
     final period = state.where((item) => item.id == id).first;
     final modPeriod = TimePeriod(
         startRange: period.startRange,
         endRange: period.endRange,
-        title: period.title,
+        title: title,
         pass: period.pass,
         teams: period.teams,
         teamDays: [...teamDays],
         id: period.id);
-    editItem(id, modPeriod);
+    if (rebuild) {
+      editItemRebuild(id, modPeriod);
+    } else {
+      editItem(id, modPeriod);
+    }
   }
 
   void editItem(String id, TimePeriod modPeriod) {
-    // Do not modify the whole state to avoid rebuild
+    // Do not rebuild:
     final pos = state.indexWhere((item) => item.id == id);
     state[pos] = modPeriod;
-    // state = [
-    //   for (final period in state)
-    //     if (period.id == id) modPeriod else period,
-    // ];
   }
 
-  /// This remove notify listeners (rebuilds)
+  void editItemRebuild(String id, TimePeriod modPeriod) {
+    /// If needs to rebuild:
+    state = [
+      for (final period in state)
+        if (period.id == id) modPeriod else period,
+    ];
+  }
+
+  /// This function notifies listeners (rebuilds)
   void removeItem(String id) {
     state = state.where((item) => item.id != id).toList();
   }
