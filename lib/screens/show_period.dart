@@ -27,8 +27,14 @@ class ShowPeriod extends StatefulHookConsumerWidget {
 class _ShowPeriodState extends ConsumerState<ShowPeriod> {
   late DateTime _focusedDay;
 
-  bool isInside(List<Set<DateTime>> list, DateTime day) => list.fold(false,
-      (previousValue, element) => previousValue || element.contains(day));
+  int? whichTeamIsThis(List<Set<DateTime>> teamList, DateTime day) {
+    //list.fold(false,(previousValue, element) => previousValue || element.contains(day));
+    int? getTeam;
+    for (var i = 0; i < teamList.length; i++) {
+      if (teamList[i].contains(day)) getTeam = i;
+    }
+    return getTeam; // Returns null if not found
+  }
 
   @override
   void initState() {
@@ -58,40 +64,47 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final period = ref.watch(periodListProvider
         .select((list) => list.where((item) => item.id == periodId).first));
     final teamDays = period.teamDays;
-    final totalDays = teamDays.fold(
-        Set(), (previousValue, element) => {...previousValue, ...element});
+    final totalDays = teamDays.fold(<DateTime>{},
+        (previousValue, element) => {...previousValue, ...element});
+
+    CalendarStyle getCalendarStyle(int team) {
+      return CalendarStyle(
+          selectedDecoration:
+              BoxDecoration(color: teamColors[team], shape: BoxShape.circle));
+    }
 
     void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+      final int? foundTeam = whichTeamIsThis(teamDays, selectedDay);
       setState(() {
         _focusedDay = focusedDay;
         // Day inside some team
-        if (isInside(teamDays, selectedDay) &&
-            !teamDays[team].contains(selectedDay)) {
-          print("day inside other team");
-          // add snackbar or popup
-        } else if (teamDays[team].contains(selectedDay)) {
+        if (foundTeam == null) {
+          teamDays[team].add(selectedDay);
+        } else if (foundTeam == team) {
           teamDays[team].remove(selectedDay);
         } else {
+          teamDays[foundTeam].remove(selectedDay);
           teamDays[team].add(selectedDay);
         }
       });
     }
 
-    Widget? daySelected(
+    Widget? daySelectedBuilder(
         BuildContext context, DateTime selectedDay, DateTime focusedDay) {
-      if (teamDays[0].contains(selectedDay)) {
-        //teamDays[team].remove(selectedDay);
-        return Container(
-          color: Colors.amber,
-          width: 5,
-          height: 5,
+      final int? foundTeam = whichTeamIsThis(teamDays, selectedDay);
+      if (foundTeam != null) {
+        final calendarStyle = getCalendarStyle(foundTeam);
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: calendarStyle.cellMargin,
+          padding: calendarStyle.cellPadding,
+          decoration: calendarStyle.selectedDecoration,
+          alignment: calendarStyle.cellAlignment,
+          child: Text('${selectedDay.day}',
+              style: calendarStyle.selectedTextStyle),
         );
       } else {
-        return Container(
-          color: Colors.teal,
-          width: 5,
-          height: 5,
-        );
+        return null;
       }
     }
 
@@ -116,16 +129,13 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
               firstDay: period.startRange,
               lastDay: period.endRange,
               focusedDay: _focusedDay,
-              //calendarBuilders: CalendarBuilders(selectedBuilder: daySelected),
-              //selectedDayPredicate: (day) => totalDays.contains(day),
-              selectedDayPredicate: (day) => teamDays[team].contains(day),
+              calendarBuilders:
+                  CalendarBuilders(selectedBuilder: daySelectedBuilder),
+              selectedDayPredicate: (day) => totalDays.contains(day),
               onDaySelected: onDaySelected,
               onPageChanged: (focusedDay) => _focusedDay = focusedDay,
               headerStyle: const HeaderStyle(
                   formatButtonVisible: false, titleCentered: true),
-              calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(
-                      color: teamColors[team], shape: BoxShape.circle)),
             ),
           ],
         ),
