@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:year_planner/database/db_model.dart';
-import 'package:year_planner/database/models.dart';
+import 'package:year_planner/database/storage_model.dart';
+import 'package:year_planner/database/data_models.dart';
 
 /// Database Provider
 final saveManagerProvider = Provider<SaveManager>(((ref) {

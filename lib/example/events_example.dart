@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../utils/utils.dart';
+import '../utils/calendar_utils.dart';
 
 class TableEventsExample extends StatefulWidget {
   @override

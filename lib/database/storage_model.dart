@@ -1,5 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:year_planner/database/models.dart';
+import 'package:year_planner/database/data_models.dart';
 
 // Transfer class to convert from memory and save
 class SaveManager {

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:year_planner/database/models.dart';
+import 'package:year_planner/database/data_models.dart';
 import 'package:year_planner/providers.dart';
 import 'package:year_planner/utils/pop_up.dart';
 
