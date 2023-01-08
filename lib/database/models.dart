@@ -18,7 +18,7 @@ class TimePeriod {
       required this.endRange,
       required this.title,
       required this.teams,
-      this.teamDays = const []});
+      required this.teamDays});
 }
 
 class TimePeriodList extends StateNotifier<List<TimePeriod>> {

@@ -1,12 +1,12 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:year_planner/models.dart';
+import 'package:year_planner/database/models.dart';
 
 // Transfer class to convert from memory and save
 class SaveManager {
   final database = FirebaseDatabase.instance.ref("periodList");
 
   Future<TimePeriod> createPeriod(String title, int teams, DateTime startRange,
-      DateTime endRange, String pass) async {
+      DateTime endRange, String pass, List<Set<DateTime>> teamList) async {
     DatabaseReference newPeriodRef = database.push();
     await newPeriodRef.set({
       "title": title,
@@ -14,7 +14,7 @@ class SaveManager {
       "pass": pass,
       "startRange": startRange.toIso8601String(),
       "endRange": endRange.toIso8601String(),
-      "teamList": []
+      "teamList": convertTeamList(teamList)
     });
     return TimePeriod(
         id: newPeriodRef.key!,
@@ -22,18 +22,19 @@ class SaveManager {
         endRange: endRange,
         title: title,
         pass: pass,
-        teams: teams);
+        teams: teams,
+        teamDays: teamList);
   }
 
   Future<void> editPeriod(
-      String id, String title, List<Set<DateTime>> teamDays) async {
-    await database.update({
-      "$id/title": title,
-      "$id/teamList": teamDays
-          .map((team) => team.map((day) => day.toIso8601String()).toList())
-          .toList()
-    });
+      String id, String title, List<Set<DateTime>> teamList) async {
+    await database.update(
+        {"$id/title": title, "$id/teamList": convertTeamList(teamList)});
   }
+
+  List<List<String>> convertTeamList(List<Set<DateTime>> teamList) => teamList
+      .map((team) => team.map((day) => day.toIso8601String()).toList())
+      .toList();
 
   Future<void> removePeriod(String id) async {
     await database.child(id).remove();
@@ -56,16 +57,13 @@ class SaveManager {
   }
 
   TimePeriod getTimePeriod(DataSnapshot item) {
-    final List<Set<DateTime>> teamDays = [];
+    final List<Set<DateTime>> teamList = [];
 
     if (item.child("teamList").exists) {
-      final teams = item.child("teamList").value as List;
-      for (var team in teams) {
-        final days = List.castFrom(team)
-            .map((day) => DateTime.parse(day.toString()))
-            .toSet();
-        teamDays.add(days);
-      }
+      teamList.addAll((item.child("teamList").value as List).map((team) =>
+          List.castFrom(team)
+              .map((day) => DateTime.parse(day.toString()))
+              .toSet()));
     }
     return TimePeriod(
       id: item.key!,
@@ -74,7 +72,7 @@ class SaveManager {
       endRange: DateTime.parse(item.child("endRange").value.toString()),
       title: item.child("title").value.toString(),
       teams: item.child("teams").value as int,
-      teamDays: teamDays,
+      teamDays: teamList,
     );
   }
 }

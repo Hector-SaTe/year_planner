@@ -1,17 +1,22 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:year_planner/database/db_model.dart';
-import 'package:year_planner/models.dart';
 import 'package:year_planner/providers.dart';
-
-import '../utils.dart';
+import 'package:year_planner/utils/utils.dart';
 
 final _titleProvider = StateProvider.autoDispose<String>(((ref) => ""));
 final _passProvider = StateProvider.autoDispose<String>(((ref) => ""));
 final _teamsProvider = StateProvider.autoDispose<int>(((ref) => 2));
+final _emptyTeamListProvider = Provider.autoDispose(((ref) => List.generate(
+    4,
+    ((index) => LinkedHashSet<DateTime>(
+          equals: isSameDay,
+          hashCode: getHashCode,
+        )),
+    growable: false)));
 
 class SelectRange extends StatefulWidget {
   const SelectRange({super.key});
@@ -141,7 +146,7 @@ class TitleInput extends HookConsumerWidget {
           ),
           TextField(
             controller: passController,
-            maxLength: 20,
+            maxLength: 10,
             decoration: const InputDecoration(
               labelText: 'Enter password',
             ),
@@ -204,19 +209,35 @@ class SaveButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final saveManager = ref.watch(saveManagerProvider);
+    final title = ref.watch(_titleProvider);
+    final pass = ref.watch(_passProvider);
+    final teams = ref.watch(_teamsProvider);
+    final teamList = ref.watch(_emptyTeamListProvider);
 
-    final String title = ref.watch(_titleProvider);
-    final String pass = ref.watch(_passProvider);
-    final int teams = ref.watch(_teamsProvider);
     bool deactivated =
         (title.isEmpty || _rangeStart == null || _rangeEnd == null);
+
+    void divideDaysInRange() {
+      final totalDays = daysInRange(_rangeStart!, _rangeEnd!);
+      final double daysPerTeam = totalDays.length / teams;
+      for (var i = 0; i < totalDays.length; i++) {
+        for (var j = 1; j <= teams; j++) {
+          if (i < j * daysPerTeam && i >= (j - 1) * daysPerTeam) {
+            teamList[j - 1].add(totalDays[i]);
+          }
+        }
+      }
+    }
+
     return FloatingActionButton(
       backgroundColor: deactivated ? Colors.grey : null,
       onPressed: deactivated
           ? null
           : () {
+              divideDaysInRange();
               saveManager
-                  .createPeriod(title, teams, _rangeStart!, _rangeEnd!, pass)
+                  .createPeriod(
+                      title, teams, _rangeStart!, _rangeEnd!, pass, teamList)
                   .then((newPeriod) {
                 ref.read(periodListProvider.notifier).addItem(newPeriod);
                 Navigator.pop(context);

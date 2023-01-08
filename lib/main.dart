@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:year_planner/screens/show_period.dart';
 import 'package:year_planner/screens/create_period.dart';
 import 'package:year_planner/providers.dart';
+import 'package:year_planner/utils/pop_up.dart';
 
 import 'firebase_options.dart';
 
@@ -60,6 +61,7 @@ class MyHomePage extends ConsumerWidget {
           for (final item in periodList)
             Dismissible(
               key: ValueKey(item.id),
+              confirmDismiss: (direction) => getPassword(context, item.pass),
               onDismissed: (direction) {
                 saveManager.removePeriod(item.id).then((manager) {
                   // delete element from memory list
@@ -88,10 +90,10 @@ class MyHomePage extends ConsumerWidget {
             // });
           },
         ),
-        // const Text("Save List"),
+        // const Text("Test"),
         // IconButton(
-        //   icon: const Icon(Icons.arrow_circle_down),
-        //   onPressed: (() => null),
+        //   icon: const Icon(Icons.textsms),
+        //   onPressed: (() => getPassword(context, "pass")),
         // )
       ],
       floatingActionButton: FloatingActionButton(

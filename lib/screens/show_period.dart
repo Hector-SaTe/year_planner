@@ -1,14 +1,13 @@
 import 'dart:collection';
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:year_planner/models.dart';
+import 'package:year_planner/database/models.dart';
 import 'package:year_planner/providers.dart';
-
-import '../utils.dart';
+import 'package:year_planner/utils/pop_up.dart';
 
 // Private Providers
 final _editTeams = StateProvider.autoDispose<bool>(((ref) => false));
@@ -46,18 +45,6 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final period = ref.read(periodListProvider
         .select((list) => list.where((item) => item.id == periodId).first));
     _focusedDay = period.startRange;
-    if (period.teamDays.isEmpty) {
-      final definedList = List.generate(
-          4,
-          ((index) => LinkedHashSet<DateTime>(
-                equals: isSameDay,
-                hashCode: getHashCode,
-              )),
-          growable: false);
-      ref
-          .read(periodListProvider.notifier)
-          .saveEdit(periodId, period.title, definedList, false);
-    }
     super.initState();
   }
 
@@ -180,7 +167,13 @@ class EditButtons extends ConsumerWidget {
     final editMode = ref.watch(_editTeams);
     const double iconSize = 30;
 
-    void edit() => ref.read(_editTeams.notifier).state = true;
+    void edit() async {
+      final confirmation = await getPassword(context, period.pass);
+      if (confirmation == true) {
+        ref.read(_editTeams.notifier).state = true;
+      }
+    }
+
     void discard() async {
       ref.read(_editTeams.notifier).state = false;
       final oldPeriod = await saveManager.getPeriod(period.id);
