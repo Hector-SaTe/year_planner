@@ -239,7 +239,7 @@ class SaveButton extends ConsumerWidget {
                   .createPeriod(
                       title, teams, _rangeStart!, _rangeEnd!, pass, teamList)
                   .then((newPeriod) {
-                ref.read(periodListProvider.notifier).addItem(newPeriod);
+                //ref.read(periodListProvider.notifier).addItem(newPeriod);
                 Navigator.pop(context);
               });
             },

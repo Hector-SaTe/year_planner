@@ -3,7 +3,10 @@ import 'package:year_planner/database/data_models.dart';
 
 // Transfer class to convert from memory and save
 class SaveManager {
-  final database = FirebaseDatabase.instance.ref("periodList");
+  final DatabaseReference database;
+  SaveManager(this.database);
+
+  //final database = FirebaseDatabase.instance.ref("periodList");
 
   Future<TimePeriod> createPeriod(String title, int teams, DateTime startRange,
       DateTime endRange, String pass, List<Set<DateTime>> teamList) async {
@@ -38,17 +41,6 @@ class SaveManager {
 
   Future<void> removePeriod(String id) async {
     await database.child(id).remove();
-  }
-
-  Future<List<TimePeriod>> getPeriods() async {
-    final snapshot = await database.get();
-    if (snapshot.children.isNotEmpty) {
-      final periods =
-          snapshot.children.map((item) => getTimePeriod(item)).toList();
-      return periods;
-    } else {
-      return const [];
-    }
   }
 
   Future<TimePeriod> getPeriod(String id) async {

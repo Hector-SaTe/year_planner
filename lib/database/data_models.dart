@@ -19,6 +19,11 @@ class TimePeriod {
       required this.title,
       required this.teams,
       required this.teamDays});
+
+  @override
+  String toString() {
+    return "$id : $title";
+  }
 }
 
 class TimePeriodList extends StateNotifier<List<TimePeriod>> {
@@ -32,8 +37,7 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
     state = savedList;
   }
 
-  void saveEdit(
-      String id, String title, List<Set<DateTime>> teamDays, bool rebuild) {
+  void saveEdit(String id, String title, List<Set<DateTime>> teamDays) {
     final period = state.where((item) => item.id == id).first;
     final modPeriod = TimePeriod(
         startRange: period.startRange,
@@ -43,29 +47,30 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
         teams: period.teams,
         teamDays: [...teamDays],
         id: period.id);
-    if (rebuild) {
-      editItemRebuild(id, modPeriod);
-    } else {
-      editItem(id, modPeriod);
-    }
+    //if (rebuild) {
+    editItem(modPeriod);
+    // } else {
+    //   editItem(id, modPeriod);
+    // }
   }
 
-  void editItem(String id, TimePeriod modPeriod) {
+  void editItemNoRebuild(TimePeriod modPeriod) {
     // Do not rebuild:
-    final pos = state.indexWhere((item) => item.id == id);
+    final pos = state.indexWhere((item) => item.id == modPeriod.id);
     state[pos] = modPeriod;
   }
 
-  void editItemRebuild(String id, TimePeriod modPeriod) {
+  void editItem(TimePeriod modPeriod) {
     /// If needs to rebuild:
     state = [
       for (final period in state)
-        if (period.id == id) modPeriod else period,
+        if (period.id == modPeriod.id) modPeriod else period,
     ];
   }
 
   /// This function notifies listeners (rebuilds)
   void removeItem(String id) {
+    //state.removeWhere((item) => item.id == id);
     state = state.where((item) => item.id != id).toList();
   }
 }

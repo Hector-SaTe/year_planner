@@ -64,9 +64,9 @@ class MyHomePage extends ConsumerWidget {
               key: ValueKey(item.id),
               confirmDismiss: (direction) => getPassword(context, item.pass),
               onDismissed: (direction) {
-                saveManager.removePeriod(item.id).then((manager) {
+                saveManager.removePeriod(item.id).then((_) {
                   // delete element from memory list
-                  ref.read(periodListProvider.notifier).removeItem(item.id);
+                  //ref.read(periodListProvider.notifier).removeItem(item.id);
                 });
               },
               child: ProviderScope(
@@ -79,12 +79,12 @@ class MyHomePage extends ConsumerWidget {
         ],
       ),
       persistentFooterButtons: [
-        const Text("Load List"),
+        const Text("show List"),
         IconButton(
           icon: const Icon(Icons.arrow_circle_up),
           onPressed: () async {
-            saveManager.getPeriods().then((dbPeriods) =>
-                ref.read(periodListProvider.notifier).addSavedItems(dbPeriods));
+            final periodItems = ref.read(periodListProvider);
+            print(periodItems);
             // ref.invalidate(savedPeriodProvider);
             // ref.read(savedPeriodProvider.future).then((savedList) {
             //   ref.read(periodListProvider.notifier).addSavedItems(savedList);
@@ -116,11 +116,14 @@ class PeriodListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print("rebuild ListItem.");
+
     final periodId = ref.watch(currentItemId);
     final period = ref.watch(periodListProvider
         .select((list) => list.where((item) => item.id == periodId).first));
     final Duration duration =
         period.endRange.difference(period.startRange) + const Duration(days: 1);
+    print(period);
 
     return ListTile(
       leading: const Padding(

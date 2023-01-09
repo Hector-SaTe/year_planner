@@ -123,7 +123,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
                   onChanged: (value) {
                     ref
                         .read(periodListProvider.notifier)
-                        .saveEdit(periodId, value, teamDays, true);
+                        .saveEdit(periodId, value, teamDays);
                     //textController.clear();
                   },
                 )
@@ -177,9 +177,7 @@ class EditButtons extends ConsumerWidget {
     void discard() async {
       ref.read(_editTeams.notifier).state = false;
       final oldPeriod = await saveManager.getPeriod(period.id);
-      ref
-          .read(periodListProvider.notifier)
-          .editItemRebuild(period.id, oldPeriod);
+      ref.read(periodListProvider.notifier).editItem(oldPeriod);
       //load againfrom cache? once()
     }
 
