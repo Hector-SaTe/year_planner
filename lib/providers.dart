@@ -40,7 +40,6 @@ final saveManagerProvider = Provider<SaveManager>(((ref) {
 /// Global data provider
 final periodListProvider =
     StateNotifierProvider<TimePeriodList, List<TimePeriod>>(((ref) {
-  // final savedList = await ref.watch(savedPeriodProvider.future);
   final database = ref.watch(firebaseInstanceProvider);
   final saveManager = ref.watch(saveManagerProvider);
 
@@ -61,5 +60,5 @@ final periodListProvider =
   return timePeriodList;
 }));
 
-final currentItemId = Provider<String>((ref) => throw UnimplementedError());
-final selectedItemId = StateProvider<String>((_) => "");
+final selectedPeriod =
+    Provider<TimePeriod>((ref) => throw UnimplementedError());

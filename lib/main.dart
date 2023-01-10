@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:year_planner/screens/show_period.dart';
-import 'package:year_planner/screens/create_period.dart';
-import 'package:year_planner/providers.dart';
-import 'package:year_planner/utils/pop_up.dart';
+import 'package:year_planner/screens/home_period.dart';
+import 'package:year_planner/screens/splash.dart';
 
 import 'firebase_options.dart';
 
@@ -31,19 +28,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
-      home: const MyHomePage(),
+      home: const Splash(),
+      //initialRoute: "",
     );
   }
 }
 
-class MyHomePage extends ConsumerWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final periodList = ref.watch(periodListProvider);
-    final saveManager = ref.watch(saveManagerProvider);
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: const Padding(
@@ -58,89 +53,24 @@ class MyHomePage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
-          const Text('Select one time period to see:'),
-          for (final item in periodList)
-            Dismissible(
-              key: ValueKey(item.id),
-              confirmDismiss: (direction) => getPassword(context, item.pass),
-              onDismissed: (direction) {
-                saveManager.removePeriod(item.id).then((_) {
-                  // delete element from memory list
-                  //ref.read(periodListProvider.notifier).removeItem(item.id);
-                });
-              },
-              child: ProviderScope(
-                overrides: [
-                  currentItemId.overrideWithValue(item.id),
-                ],
-                child: const PeriodListItem(),
-              ),
-            )
+          const Text('What do you want to do?'),
+          ListTile(
+              title: const Text("Calendar Planner"),
+              tileColor: Colors.purple,
+              onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomePeriodList()),
+                  )),
+          ListTile(
+            title: Text("Weekly Menu"),
+            tileColor: Colors.amber,
+          ),
+          ListTile(
+            title: Text("Savings Box"),
+            tileColor: Colors.greenAccent,
+          ),
         ],
       ),
-      persistentFooterButtons: [
-        const Text("show List"),
-        IconButton(
-          icon: const Icon(Icons.arrow_circle_up),
-          onPressed: () async {
-            final periodItems = ref.read(periodListProvider);
-            print(periodItems);
-            // ref.invalidate(savedPeriodProvider);
-            // ref.read(savedPeriodProvider.future).then((savedList) {
-            //   ref.read(periodListProvider.notifier).addSavedItems(savedList);
-            // });
-          },
-        ),
-        // const Text("Test"),
-        // IconButton(
-        //   icon: const Icon(Icons.textsms),
-        //   onPressed: (() => getPassword(context, "pass")),
-        // )
-      ],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SelectRange()),
-        ),
-        tooltip: 'new Item',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class PeriodListItem extends ConsumerWidget {
-  const PeriodListItem({Key? key}) : super(key: key);
-  String dateToString(DateTime date) =>
-      DateFormat('dd.MM.yy', 'es').format(date);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    print("rebuild ListItem.");
-
-    final periodId = ref.watch(currentItemId);
-    final period = ref.watch(periodListProvider
-        .select((list) => list.where((item) => item.id == periodId).first));
-    final Duration duration =
-        period.endRange.difference(period.startRange) + const Duration(days: 1);
-    print(period);
-
-    return ListTile(
-      leading: const Padding(
-        padding: EdgeInsets.all(4.0),
-        child: Image(image: AssetImage("assets/icon_2_front.png")),
-      ),
-      title: Text(period.title),
-      subtitle: Text(
-          "${dateToString(period.startRange)} to ${dateToString(period.endRange)}"),
-      trailing: Text("${duration.inDays} days"),
-      onTap: () {
-        ref.read(selectedItemId.notifier).state = periodId;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ShowPeriod()),
-        );
-      },
     );
   }
 }

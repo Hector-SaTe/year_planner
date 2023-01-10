@@ -70,7 +70,6 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
 
   /// This function notifies listeners (rebuilds)
   void removeItem(String id) {
-    //state.removeWhere((item) => item.id == id);
     state = state.where((item) => item.id != id).toList();
   }
 }

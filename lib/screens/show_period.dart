@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -41,10 +40,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
   @override
   void initState() {
     //initialise values
-    final periodId = ref.read(selectedItemId);
-    final period = ref.read(periodListProvider
-        .select((list) => list.where((item) => item.id == periodId).first));
-    _focusedDay = period.startRange;
+    _focusedDay = ref.read(selectedPeriod.select((value) => value.startRange));
     super.initState();
   }
 
@@ -53,9 +49,8 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final editMode = ref.watch(_editTeams);
     final teamColors = ref.watch(_teamColors);
     final team = ref.watch(_activatedTeam);
-    final periodId = ref.watch(selectedItemId);
-    final period = ref.watch(periodListProvider
-        .select((list) => list.where((item) => item.id == periodId).first));
+
+    final period = ref.watch(selectedPeriod);
     final teamDays = period.teamDays;
     final totalDays = teamDays.fold(<DateTime>{},
         (previousValue, element) => {...previousValue, ...element});
@@ -123,8 +118,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
                   onChanged: (value) {
                     ref
                         .read(periodListProvider.notifier)
-                        .saveEdit(periodId, value, teamDays);
-                    //textController.clear();
+                        .saveEdit(period.id, value, teamDays);
                   },
                 )
               : Text(period.title),
@@ -178,7 +172,6 @@ class EditButtons extends ConsumerWidget {
       ref.read(_editTeams.notifier).state = false;
       final oldPeriod = await saveManager.getPeriod(period.id);
       ref.read(periodListProvider.notifier).editItem(oldPeriod);
-      //load againfrom cache? once()
     }
 
     void save() {
@@ -260,7 +253,7 @@ class TeamsWidget extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 8),
-          DaysLeftWidget(daysLeft: daysLeftSelected, title: "Selected days:"),
+          DaysLeftTitle(daysLeft: daysLeftSelected, title: "Selected days:"),
           const SizedBox(height: 8),
           Wrap(
             spacing: 16,
@@ -285,12 +278,12 @@ class TeamsWidget extends ConsumerWidget {
                               ref.read(_activatedTeam.notifier).state = j;
                             },
                             title: Text("Team ${j + 1}:"),
-                            subtitle: DaysSelected(
+                            subtitle: DaysSelectedCounter(
                                 teamColor: teamColors[j], daysSet: teamDays[j]),
                           )
                         : ListTile(
                             title: Text("Team ${j + 1}:"),
-                            trailing: DaysSelected(
+                            trailing: DaysSelectedCounter(
                                 teamColor: teamColors[j], daysSet: teamDays[j]),
                           ),
                   ),
@@ -304,8 +297,8 @@ class TeamsWidget extends ConsumerWidget {
   }
 }
 
-class DaysSelected extends StatelessWidget {
-  const DaysSelected({
+class DaysSelectedCounter extends StatelessWidget {
+  const DaysSelectedCounter({
     Key? key,
     required this.teamColor,
     required this.daysSet,
@@ -333,40 +326,33 @@ class DaysSelected extends StatelessWidget {
 class ClearListButton extends ConsumerWidget {
   const ClearListButton({
     Key? key,
-    required this.teamColors,
-    required this.j,
-    required this.teamDays,
-    required this.team,
+    required this.period,
   }) : super(key: key);
 
-  final List<Color> teamColors;
-  final int j;
-  final List<Set<DateTime>> teamDays;
-  final int team;
+  final TimePeriod period;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return IconButton(
-      padding: const EdgeInsets.all(0),
-      color: Colors.red.shade900,
+      tooltip: "Clear all lists",
+      color: Theme.of(context).primaryColor,
       iconSize: 20,
       splashRadius: 25,
-      splashColor: teamColors[j],
       icon: const Icon(Icons.playlist_remove),
       onPressed: () {
-        teamDays[team].clear();
-        // A trick to force rebuild
-        final int i = j != 0 ? 0 : 1;
-        ref.read(_activatedTeam.notifier).state = i;
+        for (var teamSet in period.teamDays) {
+          teamSet.clear();
+        }
+        ref.read(periodListProvider.notifier).editItem(period);
       },
     );
   }
 }
 
-class DaysLeftWidget extends StatelessWidget {
+class DaysLeftTitle extends StatelessWidget {
   final int daysLeft;
   final String title;
-  const DaysLeftWidget({Key? key, required this.daysLeft, required this.title})
+  const DaysLeftTitle({Key? key, required this.daysLeft, required this.title})
       : super(key: key);
 
   @override
