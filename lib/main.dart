@@ -54,21 +54,67 @@ class MyHomePage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           const Text('What do you want to do?'),
-          ListTile(
-              title: const Text("Calendar Planner"),
-              tileColor: Colors.purple,
-              onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HomePeriodList()),
-                  )),
-          ListTile(
-            title: Text("Weekly Menu"),
-            tileColor: Colors.amber,
+          MainMenuItem(
+            title: "Calendar Planner",
+            backColor: Colors.purple.shade200,
+            image: Image.asset("assets/icon_2_alone.png"),
+            width: 60,
+            pageToGo: const HomePeriodList(),
           ),
-          ListTile(
-            title: Text("Savings Box"),
-            tileColor: Colors.greenAccent,
+          MainMenuItem(
+            title: "Weekly Menu",
+            backColor: Colors.amber.shade200,
+            image: Image.asset("assets/icon_2_alone.png"),
+            width: 60,
           ),
+          MainMenuItem(
+            title: "Savings Box",
+            backColor: Colors.green.shade200,
+            image: Image.asset("assets/icon_2_alone.png"),
+            width: 60,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MainMenuItem extends StatelessWidget {
+  final Color backColor;
+  final String title;
+  final Image image;
+  final double width;
+  final Widget? pageToGo;
+  const MainMenuItem({
+    Key? key,
+    required this.backColor,
+    required this.title,
+    required this.image,
+    required this.width,
+    this.pageToGo,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bool enabled = pageToGo != null;
+    return Card(
+      color: backColor,
+      margin: const EdgeInsets.all(24),
+      clipBehavior: Clip.none,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ListTile(
+              leading: SizedBox(width: width),
+              title: Text(title),
+              enabled: enabled,
+              onTap: enabled
+                  ? () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => pageToGo!),
+                      )
+                  : null),
+          Positioned(left: 0, top: -15, width: width, child: image)
         ],
       ),
     );
