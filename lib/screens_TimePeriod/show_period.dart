@@ -157,7 +157,7 @@ class EditButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final saveManager = ref.watch(saveManagerProvider);
+    final saveManager = ref.watch(saveManagerProvider(true));
     final editMode = ref.watch(_editTeams);
     const double iconSize = 30;
 
@@ -170,13 +170,13 @@ class EditButtons extends ConsumerWidget {
 
     void discard() async {
       ref.read(_editTeams.notifier).state = false;
-      final oldPeriod = await saveManager.getPeriod(period.id);
+      final oldPeriod = await saveManager!.getPeriod(period.id);
       ref.read(periodListProvider.notifier).editItem(oldPeriod);
     }
 
     void save() {
       ref.read(_editTeams.notifier).state = false;
-      saveManager.editPeriod(period.id, period.title, period.teamDays);
+      saveManager!.editPeriod(period.id, period.title, period.teamDays);
       const message = SnackBar(
         duration: Duration(seconds: 1),
         content: Text('Nice! changes were saved'),

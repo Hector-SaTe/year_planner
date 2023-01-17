@@ -182,7 +182,7 @@ class TitleInput extends HookConsumerWidget {
                   ref.read(_teamsProvider.notifier).state = value!)),
           const SizedBox(height: 8),
           Text(
-            "Select the daterange for the Period",
+            "Select the desired date range:",
             style: Theme.of(context)
                 .textTheme
                 .titleMedium!
@@ -208,7 +208,6 @@ class SaveButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final saveManager = ref.watch(saveManagerProvider);
     final title = ref.watch(_titleProvider);
     final pass = ref.watch(_passProvider);
     final teams = ref.watch(_teamsProvider);
@@ -229,19 +228,22 @@ class SaveButton extends ConsumerWidget {
       }
     }
 
+    void savePeriod(bool public) {
+      ref
+          .watch(saveManagerProvider(public))!
+          .createPeriod(title, teams, _rangeStart!, _rangeEnd!, pass, teamList)
+          .then((newPeriod) {
+        Navigator.pop(context);
+      });
+    }
+
     return FloatingActionButton(
       backgroundColor: deactivated ? Colors.grey : null,
       onPressed: deactivated
           ? null
           : () {
               divideDaysInRange();
-              saveManager
-                  .createPeriod(
-                      title, teams, _rangeStart!, _rangeEnd!, pass, teamList)
-                  .then((newPeriod) {
-                //ref.read(periodListProvider.notifier).addItem(newPeriod);
-                Navigator.pop(context);
-              });
+              savePeriod(true);
             },
       tooltip: 'save Item',
       child: const Icon(Icons.save),

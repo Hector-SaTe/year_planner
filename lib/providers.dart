@@ -1,61 +1,79 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:year_planner/authentication/auth_service.dart';
 import 'package:year_planner/database/storage_model.dart';
 import 'package:year_planner/database/data_models.dart';
 
 /// Auth provider
-// // 1
-// final firebaseAuthProvider =
-//     Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
+// 1
+final firebaseAuthProvider =
+    Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
 
-// // 2
-// final authStateChangesProvider = StreamProvider<User>(
-//     (ref) => ref.watch(firebaseAuthProvider).authStateChanges());
+// 2
+final authStateChangesProvider = StreamProvider<User?>(
+    (ref) => ref.watch(firebaseAuthProvider).authStateChanges());
 
-// // 3
-// final databaseProvider = Provider<FirestoreDatabase?>((ref) {
-//   final auth = ref.watch(authStateChangesProvider);
-
-//   // we only have a valid DB if the user is signed in
-//   if (auth.data?.value?.uid != null) {
-//     return FirestoreDatabase(uid: auth.data!.value!.uid);
-//   }
-//   // else we return null
-//   return null;
-// });
+final authServiceProvider = Provider(((ref) {
+  final instance = ref.watch(firebaseAuthProvider);
+  return AuthenticationService(instance);
+}));
 
 /// Database Provider
-final firebaseInstanceProvider =
-    Provider(((ref) => FirebaseDatabase.instance.ref("periodList")));
+final privateDatabaseProvider = Provider((ref) {
+  final auth = ref.watch(authStateChangesProvider);
 
-final saveManagerProvider = Provider<SaveManager>(((ref) {
-  final database = ref.watch(firebaseInstanceProvider);
-  return SaveManager(database);
+  if (auth.value?.uid != null) {
+    return FirebaseDatabase.instance.ref(auth.value!.uid);
+  }
+  return null;
+});
+
+final publicDatabaseProvider = Provider(((ref) {
+  final auth = ref.watch(authStateChangesProvider);
+
+  if (auth.value?.uid != null) {
+    return FirebaseDatabase.instance.ref("periodList");
+  }
+  return null;
 }));
-// final savedPeriodProvider = FutureProvider<List<TimePeriod>>(((ref) {
-//   final saveManager = ref.watch(saveManagerProvider);
-//   return saveManager.getPeriods();
-// }));
+
+final saveManagerProvider = Provider.family(((ref, bool public) {
+  final database = ref.watch(publicDatabaseProvider);
+  if (database != null) return SaveManager(database);
+  return null;
+}));
 
 /// Global data provider
 final periodListProvider =
     StateNotifierProvider<TimePeriodList, List<TimePeriod>>(((ref) {
-  final database = ref.watch(firebaseInstanceProvider);
-  final saveManager = ref.watch(saveManagerProvider);
+  final publicDatabase = ref.watch(publicDatabaseProvider);
+  final privateDatabase = ref.watch(privateDatabaseProvider);
+  final publicSaveManager = ref.watch(saveManagerProvider(true));
+  final privateSaveManager = ref.watch(saveManagerProvider(false));
 
   final timePeriodList = TimePeriodList();
 
-  database.onChildAdded.listen((event) {
-    final item = saveManager.getTimePeriod(event.snapshot);
-    timePeriodList.addItem(item);
-  });
-  database.onChildChanged.listen((event) {
-    final item = saveManager.getTimePeriod(event.snapshot);
-    timePeriodList.editItem(item);
-  });
-  database.onChildRemoved.listen((event) {
-    timePeriodList.removeItem(event.snapshot.key!);
-  });
+  void createListeners(DatabaseReference database, SaveManager saveManager) {
+    database.onChildAdded.listen((event) {
+      final item = saveManager.getTimePeriod(event.snapshot);
+      timePeriodList.addItem(item);
+    });
+    database.onChildChanged.listen((event) {
+      final item = saveManager.getTimePeriod(event.snapshot);
+      timePeriodList.editItem(item);
+    });
+    database.onChildRemoved.listen((event) {
+      timePeriodList.removeItem(event.snapshot.key!);
+    });
+  }
+
+  if (publicDatabase != null && publicSaveManager != null) {
+    createListeners(publicDatabase, publicSaveManager);
+  }
+  if (privateDatabase != null && privateSaveManager != null) {
+    createListeners(privateDatabase, privateSaveManager);
+  }
 
   return timePeriodList;
 }));

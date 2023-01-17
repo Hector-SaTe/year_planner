@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:year_planner/main.dart';
+import 'package:year_planner/authentication/home_screen.dart';
 
 class Splash extends StatefulWidget {
   const Splash({Key? key}) : super(key: key);

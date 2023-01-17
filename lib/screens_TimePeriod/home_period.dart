@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:year_planner/screens/show_period.dart';
-import 'package:year_planner/screens/create_period.dart';
+import 'package:year_planner/screens_TimePeriod/show_period.dart';
+import 'package:year_planner/screens_TimePeriod/create_period.dart';
 import 'package:year_planner/providers.dart';
 import 'package:year_planner/utils/pop_up.dart';
 
@@ -13,7 +13,7 @@ class HomePeriodList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final periodList = ref.watch(periodListProvider);
-    final saveManager = ref.watch(saveManagerProvider);
+    final saveManager = ref.watch(saveManagerProvider(true));
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +28,7 @@ class HomePeriodList extends ConsumerWidget {
               key: ValueKey(item.id),
               confirmDismiss: (direction) => getPassword(context, item.pass),
               onDismissed: (direction) {
-                saveManager.removePeriod(item.id);
+                saveManager!.removePeriod(item.id);
               },
               child: ProviderScope(
                 overrides: [
