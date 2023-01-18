@@ -6,7 +6,7 @@ class SaveManager {
   final DatabaseReference database;
   SaveManager(this.database);
 
-  //final database = FirebaseDatabase.instance.ref("periodList");
+  //late final database = databaseRef.child("periodList");
 
   Future<TimePeriod> createPeriod(String title, int teams, DateTime startRange,
       DateTime endRange, String pass, List<Set<DateTime>> teamList) async {

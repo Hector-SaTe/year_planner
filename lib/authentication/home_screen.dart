@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:year_planner/providers.dart';
 import 'package:year_planner/screens_TimePeriod/home_period.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         leading: const Padding(
@@ -42,6 +44,9 @@ class MyHomePage extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: ElevatedButton(
+          onPressed: (() => ref.read(authServiceProvider).signOut()),
+          child: const Text("Sign out")),
     );
   }
 }

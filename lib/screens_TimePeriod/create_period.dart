@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:year_planner/providers.dart';
 import 'package:year_planner/utils/calendar_utils.dart';
 
+final _publicProvider = StateProvider.autoDispose<bool>(((ref) => false));
 final _titleProvider = StateProvider.autoDispose<String>(((ref) => ""));
 final _passProvider = StateProvider.autoDispose<String>(((ref) => ""));
 final _teamsProvider = StateProvider.autoDispose<int>(((ref) => 2));
@@ -99,6 +100,7 @@ class _SelectRangeState extends State<SelectRange> {
                   .copyWith(color: Theme.of(context).primaryColor),
             ),
           ),
+          const SizedBox(height: 50)
         ],
       ),
     );
@@ -112,6 +114,7 @@ class TitleInput extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final public = ref.watch(_publicProvider);
     final titleController = useTextEditingController();
     final passController = useTextEditingController();
 
@@ -119,6 +122,18 @@ class TitleInput extends HookConsumerWidget {
       padding: const EdgeInsets.only(top: 16, left: 24, right: 24, bottom: 0),
       child: Column(
         children: [
+          Text(
+            "Should the Period be public?",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Theme.of(context).primaryColor),
+          ),
+          Checkbox(
+              value: public,
+              onChanged: (value) {
+                ref.read(_publicProvider.notifier).state = value!;
+              }),
           Text(
             "Enter title for the Period",
             style: Theme.of(context)
@@ -137,24 +152,26 @@ class TitleInput extends HookConsumerWidget {
               //textController.clear();
             },
           ),
-          Text(
-            "Enter password for the Period",
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium!
-                .copyWith(color: Theme.of(context).primaryColor),
-          ),
-          TextField(
-            controller: passController,
-            maxLength: 10,
-            decoration: const InputDecoration(
-              labelText: 'Enter password',
+          if (public)
+            Text(
+              "Enter password for the Period",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium!
+                  .copyWith(color: Theme.of(context).primaryColor),
             ),
-            onChanged: (value) {
-              ref.read(_passProvider.notifier).state = value;
-              //textController.clear();
-            },
-          ),
+          if (public)
+            TextField(
+              controller: passController,
+              maxLength: 10,
+              decoration: const InputDecoration(
+                labelText: 'Enter password',
+              ),
+              onChanged: (value) {
+                ref.read(_passProvider.notifier).state = value;
+                //textController.clear();
+              },
+            ),
           Text(
             "Number of teams: ",
             style: Theme.of(context)
@@ -208,6 +225,7 @@ class SaveButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final public = ref.watch(_publicProvider);
     final title = ref.watch(_titleProvider);
     final pass = ref.watch(_passProvider);
     final teams = ref.watch(_teamsProvider);
@@ -228,9 +246,9 @@ class SaveButton extends ConsumerWidget {
       }
     }
 
-    void savePeriod(bool public) {
+    void savePeriod() {
       ref
-          .watch(saveManagerProvider(public))!
+          .read(saveManagerProvider(public))!
           .createPeriod(title, teams, _rangeStart!, _rangeEnd!, pass, teamList)
           .then((newPeriod) {
         Navigator.pop(context);
@@ -243,7 +261,7 @@ class SaveButton extends ConsumerWidget {
           ? null
           : () {
               divideDaysInRange();
-              savePeriod(true);
+              savePeriod();
             },
       tooltip: 'save Item',
       child: const Icon(Icons.save),

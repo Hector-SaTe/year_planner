@@ -11,7 +11,7 @@ final firebaseAuthProvider =
     Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
 
 // 2
-final authStateChangesProvider = StreamProvider<User?>(
+final authStateProvider = StreamProvider<User?>(
     (ref) => ref.watch(firebaseAuthProvider).authStateChanges());
 
 final authServiceProvider = Provider(((ref) {
@@ -21,7 +21,7 @@ final authServiceProvider = Provider(((ref) {
 
 /// Database Provider
 final privateDatabaseProvider = Provider((ref) {
-  final auth = ref.watch(authStateChangesProvider);
+  final auth = ref.watch(authStateProvider);
 
   if (auth.value?.uid != null) {
     return FirebaseDatabase.instance.ref(auth.value!.uid);
@@ -30,7 +30,7 @@ final privateDatabaseProvider = Provider((ref) {
 });
 
 final publicDatabaseProvider = Provider(((ref) {
-  final auth = ref.watch(authStateChangesProvider);
+  final auth = ref.watch(authStateProvider);
 
   if (auth.value?.uid != null) {
     return FirebaseDatabase.instance.ref("periodList");
@@ -39,7 +39,10 @@ final publicDatabaseProvider = Provider(((ref) {
 }));
 
 final saveManagerProvider = Provider.family(((ref, bool public) {
-  final database = ref.watch(publicDatabaseProvider);
+  final privateDatabase = ref.watch(publicDatabaseProvider);
+  final publicDatabase = ref.watch(publicDatabaseProvider);
+  final database = public ? publicDatabase : privateDatabase;
+  print(database);
   if (database != null) return SaveManager(database);
   return null;
 }));

@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:year_planner/authentication/home_screen.dart';
+import 'package:year_planner/authentication/sign_in.dart';
 import 'package:year_planner/authentication/splash.dart';
+import 'package:year_planner/providers.dart';
 
 import 'firebase_options.dart';
 
@@ -27,8 +32,34 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
-      home: const Splash(),
+      home: const AuthWrapper(),
       //initialRoute: "",
     );
+  }
+}
+
+final _splashTimer = FutureProvider.autoDispose(((ref) async {
+  await Future.delayed(const Duration(milliseconds: 2000));
+  return true;
+}));
+
+class AuthWrapper extends ConsumerWidget {
+  const AuthWrapper({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authStateProvider).value;
+    final splashTimer = ref.watch(_splashTimer);
+
+    return splashTimer.when(
+        loading: () => const Splash(),
+        data: (data) {
+          if (user == null) {
+            return const SignIn();
+          } else {
+            return const MyHomePage();
+          }
+        },
+        error: (err, stack) => Text('Error: $err'));
   }
 }

@@ -1,25 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:year_planner/authentication/home_screen.dart';
 
-class Splash extends StatefulWidget {
+class Splash extends StatelessWidget {
   const Splash({Key? key}) : super(key: key);
-
-  @override
-  State<Splash> createState() => _SplashState();
-}
-
-class _SplashState extends State<Splash> {
-  @override
-  void initState() {
-    _navigateHome();
-    super.initState();
-  }
-
-  void _navigateHome() async {
-    await Future.delayed(const Duration(milliseconds: 2000));
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: ((_) => const MyHomePage())));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +13,26 @@ class _SplashState extends State<Splash> {
                 end: Alignment.bottomLeft,
                 colors: [Colors.blueGrey, Colors.amber, Colors.pink])),
         //color: Colors.amber,
-        child: Center(
-            child: Text(
+        child: const Center(child: AppTitle()),
+      ),
+    );
+  }
+}
+
+class AppTitle extends StatelessWidget {
+  const AppTitle({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Hero(
+      tag: "title",
+      child: Card(
+        margin: const EdgeInsets.all(8),
+        elevation: 3,
+        child: Text(
           "Welcome to your life planner",
           style: Theme.of(context).textTheme.headlineSmall,
-        )),
+        ),
       ),
     );
   }
