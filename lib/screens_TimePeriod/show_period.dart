@@ -11,6 +11,7 @@ import 'package:year_planner/utils/pop_up.dart';
 // Private Providers
 final _editTeams = StateProvider.autoDispose<bool>(((ref) => false));
 final _activatedTeam = StateProvider.autoDispose<int>(((ref) => 0));
+final _editTitle = StateProvider.autoDispose<String>(((ref) => ""));
 final _teamColors = Provider.autoDispose((ref) => [
       const Color.fromARGB(255, 20, 51, 191),
       const Color.fromARGB(255, 5, 137, 25),
@@ -46,6 +47,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
 
   @override
   Widget build(BuildContext context) {
+    final editTitle = ref.watch(_editTitle);
     final editMode = ref.watch(_editTeams);
     final teamColors = ref.watch(_teamColors);
     final team = ref.watch(_activatedTeam);
@@ -116,12 +118,10 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
                       labelText: 'change title',
                       border: InputBorder.none),
                   onChanged: (value) {
-                    ref
-                        .read(periodListProvider.notifier)
-                        .saveEdit(period.id, value, teamDays);
+                    ref.read(_editTitle.notifier).state = value;
                   },
                 )
-              : Text(period.title),
+              : Text(editTitle.isEmpty ? period.title : editTitle),
         ),
         body: ListView(
           padding: const EdgeInsets.only(bottom: 100),
@@ -157,8 +157,9 @@ class EditButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final saveManager = ref.watch(saveManagerProvider(true));
+    final saveManager = ref.watch(saveManagerProvider(period.public));
     final editMode = ref.watch(_editTeams);
+    final editTitle = ref.watch(_editTitle);
     const double iconSize = 30;
 
     void edit() async {
@@ -176,7 +177,10 @@ class EditButtons extends ConsumerWidget {
 
     void save() {
       ref.read(_editTeams.notifier).state = false;
-      saveManager!.editPeriod(period.id, period.title, period.teamDays);
+      ref
+          .read(periodListProvider.notifier)
+          .saveEdit(period.id, editTitle, period.teamDays);
+      saveManager!.editPeriod(period.id, editTitle, period.teamDays);
       const message = SnackBar(
         duration: Duration(seconds: 1),
         content: Text('Nice! changes were saved'),

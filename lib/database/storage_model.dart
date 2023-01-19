@@ -6,13 +6,18 @@ class SaveManager {
   final DatabaseReference database;
   SaveManager(this.database);
 
-  //late final database = databaseRef.child("periodList");
-
-  Future<TimePeriod> createPeriod(String title, int teams, DateTime startRange,
-      DateTime endRange, String pass, List<Set<DateTime>> teamList) async {
+  Future<TimePeriod> createPeriod(
+      String title,
+      int teams,
+      DateTime startRange,
+      DateTime endRange,
+      String pass,
+      List<Set<DateTime>> teamList,
+      bool public) async {
     DatabaseReference newPeriodRef = database.push();
     await newPeriodRef.set({
       "title": title,
+      "public": public,
       "teams": teams,
       "pass": pass,
       "startRange": startRange.toIso8601String(),
@@ -21,6 +26,7 @@ class SaveManager {
     });
     return TimePeriod(
         id: newPeriodRef.key!,
+        public: public,
         startRange: startRange,
         endRange: endRange,
         title: title,
@@ -64,6 +70,7 @@ class SaveManager {
       endRange: DateTime.parse(item.child("endRange").value.toString()),
       title: item.child("title").value.toString(),
       teams: item.child("teams").value as int,
+      public: (item.child("public").value as bool?) ?? true,
       teamDays: teamList,
     );
   }

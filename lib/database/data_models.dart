@@ -10,9 +10,11 @@ class TimePeriod {
   final String pass;
   final List<Set<DateTime>> teamDays;
   final int teams;
+  final bool public;
 
   const TimePeriod(
       {required this.id,
+      required this.public,
       required this.pass,
       required this.startRange,
       required this.endRange,
@@ -46,6 +48,7 @@ class TimePeriodList extends StateNotifier<List<TimePeriod>> {
         pass: period.pass,
         teams: period.teams,
         teamDays: [...teamDays],
+        public: period.public,
         id: period.id);
     //if (rebuild) {
     editItem(modPeriod);
