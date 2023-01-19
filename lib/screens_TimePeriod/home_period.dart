@@ -13,7 +13,8 @@ class HomePeriodList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final periodList = ref.watch(periodListProvider);
-    final saveManager = ref.watch(saveManagerProvider(true));
+    final publicSaveManager = ref.watch(saveManagerProvider(true));
+    final privateSaveManager = ref.watch(saveManagerProvider(false));
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +29,8 @@ class HomePeriodList extends ConsumerWidget {
               key: ValueKey(item.id),
               confirmDismiss: (direction) => getPassword(context, item.pass),
               onDismissed: (direction) {
-                saveManager!.removePeriod(item.id);
+                publicSaveManager!.removePeriod(item.id);
+                privateSaveManager!.removePeriod(item.id);
               },
               child: ProviderScope(
                 overrides: [

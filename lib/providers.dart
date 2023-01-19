@@ -20,38 +20,35 @@ final authServiceProvider = Provider(((ref) {
 }));
 
 /// Database Provider
-final privateDatabaseProvider = Provider((ref) {
+final databaseProvider = Provider((ref) {
   final auth = ref.watch(authStateProvider);
 
   if (auth.value?.uid != null) {
-    return FirebaseDatabase.instance.ref(auth.value!.uid);
+    return FirebaseDatabase.instance;
   }
   return null;
 });
 
-final publicDatabaseProvider = Provider(((ref) {
+final saveManagerProvider = Provider.family(((ref, bool public) {
+  final database = ref.watch(databaseProvider);
   final auth = ref.watch(authStateProvider);
 
-  if (auth.value?.uid != null) {
-    return FirebaseDatabase.instance.ref("periodList");
+  if (database != null) {
+    if (public) {
+      final databaseRef = database.ref("periodList");
+      return SaveManager(databaseRef);
+    } else {
+      final databaseRef = database.ref("${auth.value?.uid}/periodList");
+      return SaveManager(databaseRef);
+    }
+  } else {
+    return null;
   }
-  return null;
-}));
-
-final saveManagerProvider = Provider.family(((ref, bool public) {
-  final privateDatabase = ref.watch(publicDatabaseProvider);
-  final publicDatabase = ref.watch(publicDatabaseProvider);
-  final database = public ? publicDatabase : privateDatabase;
-  print(database);
-  if (database != null) return SaveManager(database);
-  return null;
 }));
 
 /// Global data provider
 final periodListProvider =
     StateNotifierProvider<TimePeriodList, List<TimePeriod>>(((ref) {
-  final publicDatabase = ref.watch(publicDatabaseProvider);
-  final privateDatabase = ref.watch(privateDatabaseProvider);
   final publicSaveManager = ref.watch(saveManagerProvider(true));
   final privateSaveManager = ref.watch(saveManagerProvider(false));
 
@@ -71,11 +68,11 @@ final periodListProvider =
     });
   }
 
-  if (publicDatabase != null && publicSaveManager != null) {
-    createListeners(publicDatabase, publicSaveManager);
+  if (publicSaveManager != null) {
+    createListeners(publicSaveManager.database, publicSaveManager);
   }
-  if (privateDatabase != null && privateSaveManager != null) {
-    createListeners(privateDatabase, privateSaveManager);
+  if (privateSaveManager != null) {
+    createListeners(privateSaveManager.database, privateSaveManager);
   }
 
   return timePeriodList;
