@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:year_planner/authentication/splash.dart';
 import 'package:year_planner/providers.dart';
+import 'package:year_planner/utils/snackbar_messages.dart';
 
 class SignIn extends HookConsumerWidget {
   const SignIn({
@@ -60,10 +61,18 @@ class SignIn extends HookConsumerWidget {
                 obscureText: true,
               ),
               ElevatedButton(
-                  onPressed: (() {
-                    ref.read(authServiceProvider).signIn(
-                        email: userController.text.trim(),
-                        password: passController.text.trim());
+                  onPressed: (() async {
+                    ref
+                        .read(authServiceProvider)
+                        .signIn(
+                            email: userController.text.trim(),
+                            password: passController.text.trim())
+                        .then((value) => showSnackBarMessage(
+                            context,
+                            value,
+                            value[0] == " "
+                                ? SnackBarType.info
+                                : SnackBarType.error));
                   }),
                   child: const Text("Sign in"))
             ],

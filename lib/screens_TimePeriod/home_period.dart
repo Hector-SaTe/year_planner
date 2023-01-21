@@ -29,8 +29,9 @@ class HomePeriodList extends ConsumerWidget {
               key: ValueKey(item.id),
               confirmDismiss: (direction) => getPassword(context, item.pass),
               onDismissed: (direction) {
-                publicSaveManager!.removePeriod(item.id);
-                privateSaveManager!.removePeriod(item.id);
+                item.public
+                    ? publicSaveManager!.removePeriod(item.id)
+                    : privateSaveManager!.removePeriod(item.id);
               },
               child: ProviderScope(
                 overrides: [
@@ -65,10 +66,8 @@ class PeriodListItem extends ConsumerWidget {
         period.endRange.difference(period.startRange) + const Duration(days: 1);
 
     return ListTile(
-      leading: const Padding(
-        padding: EdgeInsets.all(4.0),
-        child: Image(image: AssetImage("assets/icon_2_front.png")),
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      leading: const Image(image: AssetImage("assets/icon_2_front.png")),
       title: Text(period.title),
       subtitle: Text(
           "${dateToString(period.startRange)} to ${dateToString(period.endRange)}"),

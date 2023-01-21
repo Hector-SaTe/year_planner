@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:year_planner/database/data_models.dart';
 import 'package:year_planner/providers.dart';
 import 'package:year_planner/utils/pop_up.dart';
+import 'package:year_planner/utils/snackbar_messages.dart';
 
 // Private Providers
 final _editTeams = StateProvider.autoDispose<bool>(((ref) => false));
@@ -181,11 +182,9 @@ class EditButtons extends ConsumerWidget {
           .read(periodListProvider.notifier)
           .saveEdit(period.id, editTitle, period.teamDays);
       saveManager!.editPeriod(period.id, editTitle, period.teamDays);
-      const message = SnackBar(
-        duration: Duration(seconds: 1),
-        content: Text('Nice! changes were saved'),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(message);
+
+      showSnackBarMessage(
+          context, 'Nice! changes were saved', SnackBarType.info);
     }
 
     return Row(
