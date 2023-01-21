@@ -145,13 +145,7 @@ class TitleInput extends HookConsumerWidget {
                 child: TextField(
                   controller: titleController,
                   maxLength: 20,
-                  decoration: const InputDecoration(
-                      labelText: 'Enter title',
-                      //counterText: '',
-                      contentPadding: EdgeInsets.all(16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                      )),
+                  decoration: const InputDecoration(labelText: 'Enter title'),
                   onChanged: (value) {
                     ref.read(_titleProvider.notifier).state = value;
                     //textController.clear();

@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:year_planner/authentication/auth_service.dart';
 import 'package:year_planner/database/storage_model.dart';
 import 'package:year_planner/database/data_models.dart';
+import 'package:year_planner/theme/custom_colors.dart';
 
 /// Auth provider
 // 1
@@ -45,6 +46,9 @@ final saveManagerProvider = Provider.family(((ref, bool public) {
     return null;
   }
 }));
+
+/// Theme color provider
+final colorThemeProvider = StateProvider((ref) => base);
 
 /// Global data provider
 final periodListProvider =
