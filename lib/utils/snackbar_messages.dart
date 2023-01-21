@@ -12,7 +12,7 @@ void showSnackBarMessage(
       : Colors.red.shade400;
 
   final snackBar = SnackBar(
-    content: Text(message),
+    content: Center(child: Text(message)),
     duration: const Duration(seconds: 1),
     backgroundColor: background,
   );

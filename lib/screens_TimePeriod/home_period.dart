@@ -21,9 +21,10 @@ class HomePeriodList extends ConsumerWidget {
         title: const Text('Calendar Planner'),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         children: [
-          const Text('Select one time period to see:'),
+          //const Text('Select one time period to see:'),
+
           for (final item in periodList)
             Dismissible(
               key: ValueKey(item.id),
@@ -67,7 +68,7 @@ class PeriodListItem extends ConsumerWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      leading: const Image(image: AssetImage("assets/icon_2_front.png")),
+      leading: const Image(image: AssetImage("assets/calendar.png")),
       title: Text(period.title),
       subtitle: Text(
           "${dateToString(period.startRange)} to ${dateToString(period.endRange)}"),

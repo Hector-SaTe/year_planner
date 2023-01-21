@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:year_planner/theme/custom_colors.dart';
 
 class Splash extends StatelessWidget {
   const Splash({Key? key}) : super(key: key);
@@ -9,30 +10,27 @@ class Splash extends StatelessWidget {
       child: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [Colors.blueGrey, Colors.amber, Colors.pink])),
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [coral01, orange01])),
         //color: Colors.amber,
-        child: const Center(child: AppTitle()),
-      ),
-    );
-  }
-}
-
-class AppTitle extends StatelessWidget {
-  const AppTitle({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Hero(
-      tag: "title",
-      child: Card(
-        margin: const EdgeInsets.all(8),
-        elevation: 3,
-        child: Text(
-          "Welcome to your life planner",
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        child: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Welcome to your organizer",
+              style: Theme.of(context).primaryTextTheme.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 70),
+            Text(
+              "Let's plan something!",
+              style: Theme.of(context).primaryTextTheme.headlineLarge,
+              textAlign: TextAlign.center,
+            )
+          ],
+        )),
       ),
     );
   }

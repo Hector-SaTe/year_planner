@@ -5,10 +5,11 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:year_planner/providers.dart';
 import 'package:year_planner/authentication/home_screen.dart';
 import 'package:year_planner/authentication/sign_in.dart';
 import 'package:year_planner/authentication/splash.dart';
-import 'package:year_planner/providers.dart';
+import 'package:year_planner/theme/custom_theme.dart';
 
 import 'firebase_options.dart';
 
@@ -29,9 +30,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Year Planner',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
+      theme: lightTheme,
       home: const AuthWrapper(),
       //initialRoute: "",
     );
