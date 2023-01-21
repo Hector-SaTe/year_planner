@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:year_planner/authentication/forgot_pass.dart';
-import 'package:year_planner/authentication/register.dart';
 import 'package:year_planner/providers.dart';
 import 'package:year_planner/theme/custom_colors.dart';
 import 'package:year_planner/utils/snackbar_messages.dart';
 
-class SignIn extends HookConsumerWidget {
-  const SignIn({
+class Register extends HookConsumerWidget {
+  const Register({
     Key? key,
   }) : super(key: key);
 
@@ -19,32 +18,40 @@ class SignIn extends HookConsumerWidget {
 
     final userController = useTextEditingController();
     final passController = useTextEditingController();
+    final confirmationController = useTextEditingController();
 
     var currentPassLength = useState<int>(0);
     passController.addListener(
         () => currentPassLength.value = passController.text.length);
 
-    void trySignIn() {
+    void tryRegister() {
       final validEmail = userController.text.isValidEmail();
       final validPass = currentPassLength.value > 5;
-      if (!validPass || !validEmail) return;
+      final validConfirmation =
+          confirmationController.value == passController.value;
+      if (!validPass || !validEmail || !validConfirmation) return;
 
       ref
           .read(authServiceProvider)
-          .signIn(
+          .signUp(
               email: userController.text.trim(),
               password: passController.text.trim())
-          .then((value) => showSnackBarMessage(context, value,
-              value[0] == " " ? SnackBarType.info : SnackBarType.error));
+          .then((value) {
+        showSnackBarMessage(context, value,
+            value[0] == " " ? SnackBarType.info : SnackBarType.error);
+        //if (value[0] == " ") Navigator.pop(context);
+        Navigator.pop(context);
+      });
     }
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
+          iconTheme: Theme.of(context).iconTheme,
           backgroundColor: greyBG,
           title: Text(
-            'Sign in?',
+            'Register?',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
@@ -116,8 +123,7 @@ class SignIn extends HookConsumerWidget {
                         suffixStyle: Theme.of(context).textTheme.labelSmall,
                       ),
                       autocorrect: false,
-                      obscureText: true,
-                      onFieldSubmitted: (_) => trySignIn(),
+                      //obscureText: true,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (input) => (input != null && input.length > 5)
                           ? null
@@ -127,46 +133,47 @@ class SignIn extends HookConsumerWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                  onPressed: trySignIn,
-                  icon: const Icon(Icons.lock_open),
-                  label: const Text("Sign in")),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  SizedBox(
+                    width: titleWidth,
+                    child: Text(
+                      "Confirm password",
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium!
+                          .copyWith(color: base),
+                    ),
+                  ),
+                  Flexible(
+                    child: TextFormField(
+                      controller: confirmationController,
+                      maxLength: passLength,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm your password',
+                        counterText: "",
+                        labelStyle: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      autocorrect: false,
+                      //obscureText: true,
+                      onFieldSubmitted: (_) => tryRegister(),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (input) =>
+                          (input != null && input == passController.text)
+                              ? null
+                              : "Passwords do not match",
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text("forgot password?"),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ForgotPass()),
-                    ),
-                    icon: const Icon(Icons.lock_reset),
-                    label: const Text("Reset"),
-                  )
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text("no account yet?"),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Register()),
-                    ),
-                    icon: const Icon(Icons.verified_user_outlined),
-                    label: const Text("Register"),
-                  )
-                ],
-              ),
+              ElevatedButton.icon(
+                  onPressed: tryRegister,
+                  icon: const Icon(Icons.lock_open),
+                  label: const Text("Register")),
             ],
           ),
         ),

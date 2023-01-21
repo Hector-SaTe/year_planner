@@ -26,7 +26,13 @@ class MyHomePage extends ConsumerWidget {
             backColor: lila01,
             image: Image.asset("assets/menu_vacation.png"),
             width: 140,
-            pageToGo: const HomePeriodList(),
+            pageToGo: () {
+              ref.read(colorThemeProvider.notifier).state = lila01;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HomePeriodList()),
+              );
+            },
           ),
           MainMenuItem(
             title: "Menu planner",
@@ -44,8 +50,12 @@ class MyHomePage extends ConsumerWidget {
       ),
       floatingActionButton: ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: base),
-          onPressed: (() => ref.read(authServiceProvider).signOut().then((_) =>
-              showSnackBarMessage(context, "Signed out", SnackBarType.info))),
+          onPressed: (() {
+            ref.read(colorThemeProvider.notifier).state = base;
+            ref.read(authServiceProvider).signOut().then((value) =>
+                showSnackBarMessage(context, value,
+                    value[0] == " " ? SnackBarType.info : SnackBarType.error));
+          }),
           child: const Text("Sign out")),
     );
   }
@@ -56,7 +66,7 @@ class MainMenuItem extends StatelessWidget {
   final String title;
   final Image image;
   final double width;
-  final Widget? pageToGo;
+  final Function? pageToGo;
   const MainMenuItem({
     Key? key,
     required this.backColor,
@@ -68,8 +78,8 @@ class MainMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool enabled = pageToGo != null;
     const double cardHeight = 130.0;
+    final enabled = pageToGo != null;
     return Card(
       color: backColor,
       elevation: 0,
@@ -77,12 +87,7 @@ class MainMenuItem extends StatelessWidget {
       clipBehavior: Clip.none,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: GestureDetector(
-        onTap: enabled
-            ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => pageToGo!),
-                )
-            : null,
+        onTap: enabled ? () => pageToGo!() : null,
         child: Stack(
           clipBehavior: Clip.none,
           children: [

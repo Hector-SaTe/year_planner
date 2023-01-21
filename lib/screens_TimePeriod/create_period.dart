@@ -133,14 +133,10 @@ class TitleInput extends HookConsumerWidget {
               SizedBox(
                 width: titleWidth,
                 child: Text(
-                  "Title: ",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(color: Theme.of(context).primaryColor),
+                  "Title",
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
-              //const SizedBox(width: 16),
               Flexible(
                 child: TextField(
                   controller: titleController,
@@ -148,7 +144,6 @@ class TitleInput extends HookConsumerWidget {
                   decoration: const InputDecoration(labelText: 'Enter title'),
                   onChanged: (value) {
                     ref.read(_titleProvider.notifier).state = value;
-                    //textController.clear();
                   },
                 ),
               ),
@@ -158,10 +153,7 @@ class TitleInput extends HookConsumerWidget {
             children: [
               Text(
                 "Should be public?",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium!
-                    .copyWith(color: Theme.of(context).primaryColor),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
