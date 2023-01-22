@@ -5,7 +5,7 @@ import 'package:year_planner/theme/text_style.dart';
 ThemeData getTheme(Color mainColor) => ThemeData(
     colorSchemeSeed: mainColor,
     scaffoldBackgroundColor: greyBG,
-    dividerColor: grey00,
+    dividerColor: grey03,
     textTheme: getTextTheme(mainColor),
     primaryTextTheme: customPrimaryTextTheme,
     appBarTheme: const AppBarTheme(elevation: 0),

@@ -117,7 +117,7 @@ class TitleInput extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double titleWidth = 100;
+    const double titleWidth = 90;
     final public = ref.watch(_publicProvider);
     final titleController = useTextEditingController();
     final passController = useTextEditingController();
@@ -141,7 +141,10 @@ class TitleInput extends HookConsumerWidget {
                 child: TextField(
                   controller: titleController,
                   maxLength: 20,
-                  decoration: const InputDecoration(labelText: 'Enter title'),
+                  decoration: InputDecoration(
+                      labelStyle: Theme.of(context).textTheme.labelSmall,
+                      labelText: 'Enter title',
+                      counterText: ""),
                   onChanged: (value) {
                     ref.read(_titleProvider.notifier).state = value;
                   },
@@ -175,7 +178,7 @@ class TitleInput extends HookConsumerWidget {
                   width: titleWidth,
                   height: 70,
                   child: Text(
-                    "Password: ",
+                    "Password",
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium!
@@ -186,15 +189,12 @@ class TitleInput extends HookConsumerWidget {
                   child: TextField(
                     controller: passController,
                     maxLength: 10,
-                    decoration: const InputDecoration(
-                        labelText: 'Enter password',
-                        contentPadding: EdgeInsets.all(16),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                        )),
+                    decoration: InputDecoration(
+                      labelText: 'Enter password',
+                      labelStyle: Theme.of(context).textTheme.labelSmall,
+                    ),
                     onChanged: (value) {
                       ref.read(_passProvider.notifier).state = value;
-                      //textController.clear();
                     },
                   ),
                 ),
@@ -205,22 +205,17 @@ class TitleInput extends HookConsumerWidget {
               SizedBox(
                 width: titleWidth,
                 child: Text(
-                  "Teams: ",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(color: Theme.of(context).primaryColor),
+                  "Teams",
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
               Flexible(
                 child: DropdownButtonFormField<int>(
-                    borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-                    decoration: const InputDecoration(
-                        labelText: 'Select number of teams',
-                        contentPadding: EdgeInsets.all(14),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                        )),
+                    //borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+                    decoration: InputDecoration(
+                      labelText: 'Select number of teams',
+                      labelStyle: Theme.of(context).textTheme.labelSmall,
+                    ),
                     value: ref.watch(_teamsProvider),
                     items: const [
                       DropdownMenuItem(
@@ -243,7 +238,7 @@ class TitleInput extends HookConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            "Select date range:",
+            "Date range:",
             style: Theme.of(context)
                 .textTheme
                 .titleMedium!

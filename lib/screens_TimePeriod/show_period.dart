@@ -14,10 +14,10 @@ final _editTeams = StateProvider.autoDispose<bool>(((ref) => false));
 final _activatedTeam = StateProvider.autoDispose<int>(((ref) => 0));
 final _editTitle = StateProvider.autoDispose<String>(((ref) => ""));
 final _teamColors = Provider.autoDispose((ref) => [
-      const Color.fromARGB(255, 20, 51, 191),
-      const Color.fromARGB(255, 5, 137, 25),
-      const Color.fromARGB(255, 134, 15, 84),
-      const Color.fromARGB(255, 203, 157, 16)
+      const Color(0xFFF2545B),
+      const Color(0xFF7EBD7D),
+      const Color(0xFF5291D8),
+      const Color(0xFFF79D5C)
     ]);
 
 class ShowPeriod extends StatefulHookConsumerWidget {
@@ -54,7 +54,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
     final team = ref.watch(_activatedTeam);
 
     final period = ref.watch(selectedPeriod);
-    final teamDays = period.teamDays;
+    final teamDays = period.teamDays; // no pointer copy to look into discard
     final totalDays = teamDays.fold(<DateTime>{},
         (previousValue, element) => {...previousValue, ...element});
 
@@ -103,6 +103,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
 
     final titleController = useTextEditingController(text: period.title);
 
+    /// Start of Page
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -128,6 +129,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
           padding: const EdgeInsets.only(bottom: 100),
           children: [
             TeamsWidget(period),
+            const SizedBox(height: 12),
             TableCalendar(
               startingDayOfWeek: StartingDayOfWeek.monday,
               calendarFormat: CalendarFormat.month,
@@ -177,11 +179,12 @@ class EditButtons extends ConsumerWidget {
     }
 
     void save() {
+      final title = editTitle.isEmpty ? period.title : editTitle;
       ref.read(_editTeams.notifier).state = false;
       ref
           .read(periodListProvider.notifier)
-          .saveEdit(period.id, editTitle, period.teamDays);
-      saveManager!.editPeriod(period.id, editTitle, period.teamDays);
+          .saveEdit(period.id, title, period.teamDays);
+      saveManager!.editPeriod(period.id, title, period.teamDays);
 
       showSnackBarMessage(
           context, 'Nice! changes were saved', SnackBarType.info);
@@ -216,10 +219,7 @@ class TeamsWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleStyle = Theme.of(context)
-        .textTheme
-        .titleMedium!
-        .copyWith(color: Theme.of(context).primaryColor);
+    final titleStyle = Theme.of(context).textTheme.titleMedium;
     final Duration periodDuration =
         period.endRange.difference(period.startRange) + const Duration(days: 1);
     final teamColors = ref.watch(_teamColors);
@@ -231,7 +231,7 @@ class TeamsWidget extends ConsumerWidget {
         periodDuration.inDays - teamDays.fold(0, (a, b) => a + b.length);
 
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 20),
       child: Column(
         children: [
           Row(
@@ -244,19 +244,23 @@ class TeamsWidget extends ConsumerWidget {
                   Text(dateToString(period.endRange), style: titleStyle),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 40,
                 width: 30,
-                child: VerticalDivider(
-                  thickness: 2,
-                  color: Theme.of(context).primaryColor,
-                ),
+                child: VerticalDivider(thickness: 2),
               ),
               Text("${periodDuration.inDays} days", style: titleStyle),
             ],
           ),
           const SizedBox(height: 8),
           DaysLeftTitle(daysLeft: daysLeftSelected, title: "Selected days:"),
+          const Divider(
+            thickness: 2,
+            indent: 30,
+            endIndent: 30,
+          ),
+          const SizedBox(height: 8),
+          Text("Teams", style: titleStyle),
           const SizedBox(height: 8),
           Wrap(
             spacing: 16,
@@ -264,36 +268,34 @@ class TeamsWidget extends ConsumerWidget {
             alignment: WrapAlignment.center,
             children: [
               for (var j = 0; j < period.teams; j++)
-                SizedBox(
-                  width: 160,
-                  child: Card(
-                    margin: const EdgeInsets.all(0),
-                    elevation: 0,
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    child: editMode
-                        ? SwitchListTile(
-                            contentPadding:
-                                const EdgeInsets.fromLTRB(12, 4, 12, 4),
-                            activeColor: teamColors[j],
-                            dense: false,
-                            value: j == team,
-                            onChanged: (value) {
-                              ref.read(_activatedTeam.notifier).state = j;
-                            },
-                            title: Text("Team ${j + 1}:"),
-                            subtitle: DaysSelectedCounter(
-                                teamColor: teamColors[j], daysSet: teamDays[j]),
-                          )
-                        : ListTile(
-                            title: Text("Team ${j + 1}:"),
-                            trailing: DaysSelectedCounter(
-                                teamColor: teamColors[j], daysSet: teamDays[j]),
-                          ),
+                GestureDetector(
+                  onTap: editMode
+                      ? () => ref.read(_activatedTeam.notifier).state = j
+                      : null,
+                  child: Container(
+                    width: 90,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: teamColors[j], width: 2),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Column(
+                      children: [
+                        DaysSelectedCounter(
+                          teamColor: teamColors[j],
+                          number: j + 1,
+                          enabled: editMode ? (j == team) : false,
+                        ),
+                        DaysSelectedCounter(
+                          teamColor: teamColors[j],
+                          number: teamDays[j].length,
+                          enabled: editMode ? (j != team) : true,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
         ],
       ),
     );
@@ -304,24 +306,29 @@ class DaysSelectedCounter extends StatelessWidget {
   const DaysSelectedCounter({
     Key? key,
     required this.teamColor,
-    required this.daysSet,
+    required this.number,
+    required this.enabled,
   }) : super(key: key);
 
   final Color teamColor;
-  final Set<DateTime> daysSet;
+  final int number;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: 30,
-        height: 30,
         alignment: Alignment.center,
-        margin: const EdgeInsets.all(4),
         padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(shape: BoxShape.circle, color: teamColor),
+        decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(3),
+            color: enabled ? teamColor : Colors.transparent),
         child: Text(
-          daysSet.length.toString(),
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          number.toString(),
+          style: TextStyle(
+              color: enabled ? Colors.white : teamColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 16),
         ));
   }
 }

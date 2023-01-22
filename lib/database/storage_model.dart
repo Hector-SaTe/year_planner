@@ -51,7 +51,7 @@ class SaveManager {
 
   Future<TimePeriod> getPeriod(String id) async {
     final item = await database.child(id).get();
-    return getTimePeriod(item);
+    return getTimePeriod(item.child(id));
   }
 
   TimePeriod getTimePeriod(DataSnapshot item) {
