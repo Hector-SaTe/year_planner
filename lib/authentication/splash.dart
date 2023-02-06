@@ -12,7 +12,7 @@ class Splash extends StatelessWidget {
             gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [coral01, orange01])),
+                colors: [coral_1, orange_1])),
         //color: Colors.amber,
         child: Center(
             child: Column(

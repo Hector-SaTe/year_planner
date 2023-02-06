@@ -23,11 +23,11 @@ class MyHomePage extends ConsumerWidget {
         children: [
           MainMenuItem(
             title: "Vacation planner",
-            backColor: lila01,
+            backColor: lila_1,
             image: Image.asset("assets/menu_vacation.png"),
             width: 140,
             pageToGo: () {
-              ref.read(colorThemeProvider.notifier).state = lila01;
+              ref.read(colorThemeProvider.notifier).state = lila_1;
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const HomePeriodList()),
@@ -36,13 +36,13 @@ class MyHomePage extends ConsumerWidget {
           ),
           MainMenuItem(
             title: "Menu planner",
-            backColor: coral01,
+            backColor: coral_1,
             image: Image.asset("assets/menu_food.png"),
             width: 120,
           ),
           MainMenuItem(
             title: "Savings planner",
-            backColor: orange01,
+            backColor: green_1,
             image: Image.asset("assets/menu_savings.png"),
             width: 110,
           ),
@@ -80,14 +80,14 @@ class MainMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     const double cardHeight = 130.0;
     final enabled = pageToGo != null;
-    return Card(
-      color: backColor,
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
-      clipBehavior: Clip.none,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: GestureDetector(
-        onTap: enabled ? () => pageToGo!() : null,
+    return GestureDetector(
+      onTap: enabled ? () => pageToGo!() : null,
+      child: Card(
+        color: backColor,
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
+        clipBehavior: Clip.none,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Stack(
           clipBehavior: Clip.none,
           children: [

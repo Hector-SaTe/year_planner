@@ -5,7 +5,7 @@ import 'package:year_planner/theme/text_style.dart';
 ThemeData getTheme(Color mainColor) => ThemeData(
     colorSchemeSeed: mainColor,
     scaffoldBackgroundColor: greyBG,
-    dividerColor: grey03,
+    dividerColor: grey_1,
     textTheme: getTextTheme(mainColor),
     primaryTextTheme: customPrimaryTextTheme,
     appBarTheme: const AppBarTheme(elevation: 0),
@@ -13,7 +13,7 @@ ThemeData getTheme(Color mainColor) => ThemeData(
         isDense: true,
         contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: grey02, width: 1),
+          borderSide: BorderSide(color: grey_2, width: 1),
           borderRadius: BorderRadius.all(Radius.circular(5.0)),
         )));
 

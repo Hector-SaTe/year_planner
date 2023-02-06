@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:year_planner/database/data_models.dart';
 import 'package:year_planner/providers.dart';
+import 'package:year_planner/theme/custom_colors.dart';
 import 'package:year_planner/utils/pop_up.dart';
 import 'package:year_planner/utils/snackbar_messages.dart';
 
@@ -48,6 +49,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
 
   @override
   Widget build(BuildContext context) {
+    /// All Providers being listened
     final editTitle = ref.watch(_editTitle);
     final editMode = ref.watch(_editTeams);
     final teamColors = ref.watch(_teamColors);
@@ -60,6 +62,7 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
 
     CalendarStyle getCalendarStyle(int team) {
       return CalendarStyle(
+          selectedTextStyle: const TextStyle(color: black_1, fontSize: 16),
           selectedDecoration:
               BoxDecoration(color: teamColors[team], shape: BoxShape.circle));
     }
@@ -108,17 +111,22 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
+          titleSpacing: 10,
+          centerTitle: editMode ? false : true,
           actions: [EditButtons(period)],
           title: editMode
               ? TextField(
                   controller: titleController,
                   maxLength: 20,
                   decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.edit),
-                      labelText: 'change title',
-                      border: InputBorder.none),
+                    filled: true,
+                    fillColor: Colors.white,
+                    suffixIcon: Icon(Icons.edit),
+                    //labelText: 'change title',
+                    counterText: "",
+                    isDense: false,
+                    //border: InputBorder.none,
+                  ),
                   onChanged: (value) {
                     ref.read(_editTitle.notifier).state = value;
                   },
@@ -126,7 +134,8 @@ class _ShowPeriodState extends ConsumerState<ShowPeriod> {
               : Text(editTitle.isEmpty ? period.title : editTitle),
         ),
         body: ListView(
-          padding: const EdgeInsets.only(bottom: 100),
+          padding:
+              const EdgeInsets.only(bottom: 100, left: 24, right: 24, top: 20),
           children: [
             TeamsWidget(period),
             const SizedBox(height: 12),
@@ -191,6 +200,7 @@ class EditButtons extends ConsumerWidget {
     }
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         if (editMode)
           IconButton(
@@ -202,7 +212,7 @@ class EditButtons extends ConsumerWidget {
             onPressed: editMode ? discard : edit,
             icon: editMode
                 ? const Icon(Icons.delete_forever)
-                : const Icon(Icons.edit_calendar)),
+                : const Icon(Icons.edit_note)),
       ],
     );
   }
@@ -230,74 +240,85 @@ class TeamsWidget extends ConsumerWidget {
     final int daysLeftSelected =
         periodDuration.inDays - teamDays.fold(0, (a, b) => a + b.length);
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 20),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(dateToString(period.startRange), style: titleStyle),
-                  Text(dateToString(period.endRange), style: titleStyle),
-                ],
-              ),
-              const SizedBox(
-                height: 40,
-                width: 30,
-                child: VerticalDivider(thickness: 2),
-              ),
-              Text("${periodDuration.inDays} days", style: titleStyle),
-            ],
-          ),
-          const SizedBox(height: 8),
-          DaysLeftTitle(daysLeft: daysLeftSelected, title: "Selected days:"),
-          const Divider(
-            thickness: 2,
-            indent: 30,
-            endIndent: 30,
-          ),
-          const SizedBox(height: 8),
-          Text("Teams", style: titleStyle),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: [
-              for (var j = 0; j < period.teams; j++)
-                GestureDetector(
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(dateToString(period.startRange), style: titleStyle),
+                Text(dateToString(period.endRange), style: titleStyle),
+              ],
+            ),
+            const SizedBox(
+              height: 40,
+              width: 30,
+              child: VerticalDivider(thickness: 2, color: grey_2),
+            ),
+            DaysLeftTitle(
+                daysLeft: daysLeftSelected,
+                daysTotal: periodDuration.inDays,
+                title: "Days to share:"),
+          ],
+        ),
+        //const SizedBox(height: 8),
+        const Divider(
+          thickness: 2,
+          height: 30,
+        ),
+        //const SizedBox(height: 8),
+        Text("Teams", style: titleStyle),
+        //const SizedBox(height: 8),
+        if (editMode) ClearListButton(period: period),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var j = 0; j < period.teams; j++)
+              Flexible(
+                child: GestureDetector(
                   onTap: editMode
                       ? () => ref.read(_activatedTeam.notifier).state = j
                       : null,
-                  child: Container(
-                    width: 90,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: teamColors[j], width: 2),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Column(
-                      children: [
-                        DaysSelectedCounter(
-                          teamColor: teamColors[j],
-                          number: j + 1,
-                          enabled: editMode ? (j == team) : false,
-                        ),
-                        DaysSelectedCounter(
-                          teamColor: teamColors[j],
-                          number: teamDays[j].length,
-                          enabled: editMode ? (j != team) : true,
-                        ),
-                      ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 11),
+                    child: Container(
+                      width: 130,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: !editMode
+                                ? teamColors[j]
+                                : (j != team)
+                                    ? grey_1
+                                    : teamColors[j],
+                            width: 2),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Column(
+                        children: [
+                          DaysSelectedCounter(
+                            posUp: true,
+                            teamColor: teamColors[j],
+                            number: j + 1,
+                            enabled: editMode ? (j != team) : true,
+                          ),
+                          DaysSelectedCounter(
+                            posUp: false,
+                            teamColor: teamColors[j],
+                            number: teamDays[j].length,
+                            enabled: editMode ? (j != team) : true,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-            ],
-          ),
-        ],
-      ),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -308,27 +329,35 @@ class DaysSelectedCounter extends StatelessWidget {
     required this.teamColor,
     required this.number,
     required this.enabled,
+    required this.posUp,
   }) : super(key: key);
 
   final Color teamColor;
   final int number;
   final bool enabled;
+  final bool posUp;
 
   @override
   Widget build(BuildContext context) {
+    final String text = posUp ? number.toString() : "$number days";
+    final bool posEnabled = posUp ? enabled : !enabled;
     return Container(
+        height: 32,
         alignment: Alignment.center,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
             shape: BoxShape.rectangle,
             borderRadius: BorderRadius.circular(3),
-            color: enabled ? teamColor : Colors.transparent),
+            color: posEnabled ? teamColor : Colors.transparent),
         child: Text(
-          number.toString(),
+          text,
+          //maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.fade,
           style: TextStyle(
-              color: enabled ? Colors.white : teamColor,
+              color: posEnabled ? Colors.white : teamColor,
               fontWeight: FontWeight.w600,
-              fontSize: 16),
+              fontSize: posUp ? 20 : 15),
         ));
   }
 }
@@ -343,17 +372,17 @@ class ClearListButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      tooltip: "Clear all lists",
-      color: Theme.of(context).primaryColor,
-      iconSize: 20,
-      splashRadius: 25,
+    return OutlinedButton.icon(
       icon: const Icon(Icons.playlist_remove),
+      label: const Text("Clear all lists"),
       onPressed: () {
         for (var teamSet in period.teamDays) {
           teamSet.clear();
         }
-        ref.read(periodListProvider.notifier).editItem(period);
+        //ref.invalidate(_editTitle);
+        /// Change teams is a trick to force rebuild
+        ref.read(_activatedTeam.notifier).state = 1;
+        ref.read(_activatedTeam.notifier).state = 0;
       },
     );
   }
@@ -361,26 +390,32 @@ class ClearListButton extends ConsumerWidget {
 
 class DaysLeftTitle extends StatelessWidget {
   final int daysLeft;
+  final int daysTotal;
   final String title;
-  const DaysLeftTitle({Key? key, required this.daysLeft, required this.title})
+  const DaysLeftTitle(
+      {Key? key,
+      required this.daysLeft,
+      required this.title,
+      required this.daysTotal})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final Color iconColor = daysLeft == 0 ? Colors.green : Colors.orange;
-    final String text =
-        daysLeft == 0 ? "All days divided!" : "Still $daysLeft days left...";
-    return Row(
+    final Color textColor = daysLeft == 0
+        ? Colors.green
+        : daysLeft == daysTotal
+            ? red_1
+            : warning;
+    final String text = "${daysTotal - daysLeft} / $daysTotal";
+    final TextStyle textStyle =
+        Theme.of(context).textTheme.titleMedium!.copyWith(color: textColor);
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title),
-        const SizedBox(width: 20),
-        Icon(
-          Icons.group_outlined,
-          color: iconColor,
-        ),
-        const SizedBox(width: 20),
-        Text(text)
+        Text(title, style: textStyle),
+        //const SizedBox(width: 20),
+        Text(text, style: textStyle)
       ],
     );
   }
